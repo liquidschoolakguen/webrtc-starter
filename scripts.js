@@ -3,8 +3,8 @@ const password = "x";
 document.querySelector('#user-name').innerHTML = userName;
 
 //if trying it on a phone, use this instead...
-// const socket = io.connect('https://LOCAL-DEV-IP-HERE:8181/',{
-const socket = io.connect('https://localhost:8181/',{
+ const socket = io.connect('https://192.168.146.225:8181/',{
+//const socket = io.connect('https://localhost:8181/',{
     auth: {
         userName,password
     }
@@ -59,7 +59,7 @@ const answerOffer = async(offerObj)=>{
     console.log(answer)
     // console.log(peerConnection.signalingState) //should be have-local-pranswer because CLIENT2 has set its local desc to it's answer (but it won't be)
     //add the answer to the offerObj so the server knows which offer this is related to
-    offerObj.answer = answer 
+    offerObj.answer = answer
     //emit the answer to the signaling server, so it can emit to CLIENT1
     //expect a response from the server with the already existing ICE candidates
     const offerIceCandidates = await socket.emitWithAck('newAnswer',offerObj)
@@ -86,8 +86,8 @@ const fetchUserMedia = ()=>{
                 // audio: true,
             });
             localVideoEl.srcObject = stream;
-            localStream = stream;    
-            resolve();    
+            localStream = stream;
+            resolve();
         }catch(err){
             console.log(err);
             reject()
@@ -123,10 +123,10 @@ const createPeerConnection = (offerObj)=>{
                     iceCandidate: e.candidate,
                     iceUserName: userName,
                     didIOffer,
-                })    
+                })
             }
         })
-        
+
         peerConnection.addEventListener('track',e=>{
             console.log("Got a track from the other peer!! How excting")
             console.log(e)
