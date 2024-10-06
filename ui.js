@@ -64,7 +64,8 @@ function createOfferEls(offers) {
       console.log(o);
       const newOfferEl = document.createElement('button');
       newOfferEl.className = 'btn btn-success';
-      newOfferEl.textContent = `Answer ${o.offererUserName}`;
+      //newOfferEl.textContent = `Answer ${o.offererUserName}`;
+      newOfferEl.textContent = `Ok, jetzt nochmal clicken, dann kommt Mithat`;
       newOfferEl.addEventListener('click', () => answerOffer(o));
       answerEl.appendChild(newOfferEl);
 
