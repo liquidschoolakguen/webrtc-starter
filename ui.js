@@ -3,6 +3,19 @@
 // Verwaltet die Benutzeroberfläche, einschließlich Event Listener für Buttons, Aktualisierung der UI-Elemente und Handhabung von Benutzereingaben
 
 function initializeUI() {
+  // Event Listener für den "Verbinde mich"-Button
+  document.querySelector('#connect').addEventListener('click', async () => {
+      try {
+          // Socket-Verbindung herstellen
+          await initializeSocket(userName, password);
+          // UI aktualisieren
+          hideConnectButton();
+          showCallButton();
+      } catch (err) {
+          console.error('Fehler beim Herstellen der Socket-Verbindung:', err);
+      }
+  });
+
   // Event Listener für den "Call"-Button
   document.querySelector('#call').addEventListener('click', call);
 
@@ -20,7 +33,8 @@ function initializeUI() {
   });
 
   // UI initialisieren
-  showCallButton();
+  showConnectButton();
+  hideCallButton();
   hideHangupButton();
   hideVideoAndChat();
   hideAnswerButtons();
@@ -58,10 +72,19 @@ function createOfferEls(offers) {
       hideCallButton();
       hideHangupButton();
       hideVideoAndChat();
+      hideConnectButton();
   });
 }
 
 // UI-Helper-Funktionen
+function showConnectButton() {
+  document.querySelector('#connect').style.display = 'inline-block';
+}
+
+function hideConnectButton() {
+  document.querySelector('#connect').style.display = 'none';
+}
+
 function showCallButton() {
   document.querySelector('#call').style.display = 'inline-block';
 }
