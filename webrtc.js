@@ -1,16 +1,6 @@
-const userName = "Rob-" + Math.floor(Math.random() * 100000);
-const password = "x";
-document.querySelector('#user-name').innerHTML = userName;
+// webrtc.js
 
-//if trying it on a phone, use this instead...
-const socket = io.connect('https://192.168.146.225:8181/', {
-    auth: {
-        userName, password
-    }
-});
-
-const localVideoEl = document.querySelector('#local-video');
-const remoteVideoEl = document.querySelector('#remote-video');
+// WebRTC-bezogene Funktionen, wie das Erstellen und Verwalten der Peer-Verbindung, Handling von MediaStreams und DataChannels
 
 let localStream;
 let remoteStream;
@@ -18,7 +8,10 @@ let peerConnection;
 let didIOffer = false;
 let dataChannel;
 
-let peerConfiguration = {
+const localVideoEl = document.querySelector('#local-video');
+const remoteVideoEl = document.querySelector('#remote-video');
+
+const peerConfiguration = {
     iceServers: [
         {
             urls: [
@@ -29,23 +22,33 @@ let peerConfiguration = {
     ]
 };
 
-const call = async e => {
+function initializeWebRTC() {
+    // Initialisierung, falls erforderlich
+}
+
+// Funktion zum Starten eines Anrufs
+async function call() {
     await fetchUserMedia();
     didIOffer = true;
     await createPeerConnection();
 
     try {
-        console.log("Creating offer...");
+        console.log("Erstelle Angebot...");
         const offer = await peerConnection.createOffer();
         console.log(offer);
         await peerConnection.setLocalDescription(offer);
-        socket.emit('newOffer', offer); //send offer to signalingServer
+        socket.emit('newOffer', offer); // Angebot an Signalisierungsserver senden
+
+        // UI aktualisieren
+        showHangupButton();
+        hideCallButton();
     } catch (err) {
         console.log(err);
     }
-};
+}
 
-const answerOffer = async (offerObj) => {
+// Funktion zum Beantworten eines Angebots
+async function answerOffer(offerObj) {
     await fetchUserMedia();
     didIOffer = false;
     await createPeerConnection(offerObj);
@@ -57,16 +60,28 @@ const answerOffer = async (offerObj) => {
     const offerIceCandidates = await socket.emitWithAck('newAnswer', offerObj);
     offerIceCandidates.forEach(c => {
         peerConnection.addIceCandidate(c);
-        console.log("======Added Ice Candidate======");
+        console.log("====== ICE-Kandidat hinzugefügt ======");
     });
     console.log(offerIceCandidates);
-};
 
-const addAnswer = async (offerObj) => {
+    // UI aktualisieren
+    showHangupButton();
+    hideCallButton();
+    hideAnswerButtons();
+}
+
+// Funktion zum Hinzufügen einer Antwort
+async function addAnswer(offerObj) {
     await peerConnection.setRemoteDescription(offerObj.answer);
-};
 
-const fetchUserMedia = () => {
+    // UI aktualisieren
+    showHangupButton();
+    hideCallButton();
+    hideAnswerButtons();
+}
+
+// Funktion zum Abrufen des lokalen Medienstreams
+function fetchUserMedia() {
     return new Promise(async (resolve, reject) => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -81,9 +96,10 @@ const fetchUserMedia = () => {
             reject();
         }
     });
-};
+}
 
-const createPeerConnection = (offerObj) => {
+// Funktion zum Erstellen der Peer-Verbindung
+function createPeerConnection(offerObj) {
     return new Promise(async (resolve, reject) => {
         peerConnection = new RTCPeerConnection(peerConfiguration);
         remoteStream = new MediaStream();
@@ -111,7 +127,7 @@ const createPeerConnection = (offerObj) => {
         });
 
         peerConnection.addEventListener('icecandidate', e => {
-            console.log('........Ice candidate found!......');
+            console.log('........ ICE-Kandidat gefunden! ......');
             console.log(e);
             if (e.candidate) {
                 socket.emit('sendIceCandidateToSignalingServer', {
@@ -123,12 +139,27 @@ const createPeerConnection = (offerObj) => {
         });
 
         peerConnection.addEventListener('track', e => {
-            console.log("Got a track from the other peer!! How exciting");
+            console.log("Empfange Track vom anderen Peer!");
             console.log(e);
             e.streams[0].getTracks().forEach(track => {
                 remoteStream.addTrack(track, remoteStream);
-                console.log("Here's an exciting moment... fingers crossed");
+                console.log("Track erfolgreich hinzugefügt");
             });
+        });
+
+        peerConnection.addEventListener('connectionstatechange', () => {
+            if (peerConnection.connectionState === 'connected') {
+                console.log('Peers connected!');
+                // Socket-Verbindung schließen
+                socket.disconnect();
+                console.log('Socket-Verbindung geschlossen');
+
+                // UI aktualisieren
+                showHangupButton();
+                hideCallButton();
+                hideAnswerButtons();
+                showVideoAndChat();
+            }
         });
 
         if (offerObj) {
@@ -136,17 +167,26 @@ const createPeerConnection = (offerObj) => {
         }
         resolve();
     });
-};
+}
 
+// Funktion zum Einrichten des DataChannels
 function setupDataChannel() {
     dataChannel.onopen = () => {
-        console.log('Data channel is open');
+        console.log('DataChannel ist offen');
         document.querySelector('#chat-input').disabled = false;
         document.querySelector('#send-button').disabled = false;
     };
 
     dataChannel.onmessage = (event) => {
-        console.log('Received message:', event.data);
+        console.log('Nachricht empfangen:', event.data);
+
+        // Prüfen, ob es sich um ein Hangup-Ereignis handelt
+        if (event.data === '__hangup__') {
+            console.log('Remote Peer hat aufgelegt');
+            hangup(false); // Lokale Bereinigung durchführen, ohne erneut Hangup-Nachricht zu senden
+            return;
+        }
+
         const chatMessages = document.querySelector('#chat-messages');
         const messageEl = document.createElement('div');
         messageEl.textContent = 'Remote: ' + event.data;
@@ -155,23 +195,31 @@ function setupDataChannel() {
     };
 
     dataChannel.onclose = () => {
-        console.log('Data channel is closed');
+        console.log('DataChannel ist geschlossen');
         document.querySelector('#chat-input').disabled = true;
         document.querySelector('#send-button').disabled = true;
     };
 
     dataChannel.onerror = (error) => {
-        console.error('Data channel error:', error);
+        console.error('DataChannel Fehler:', error);
     };
 }
 
-const addNewIceCandidate = iceCandidate => {
+// Funktion zum Hinzufügen eines neuen ICE-Kandidaten
+function addNewIceCandidate(iceCandidate) {
     peerConnection.addIceCandidate(iceCandidate);
-    console.log("======Added Ice Candidate======");
-};
+    console.log("====== ICE-Kandidat hinzugefügt ======");
+}
 
-const hangup = () => {
-    console.log('Ending call');
+// Funktion zum Beenden des Anrufs
+function hangup(sendSignal = true) {
+    console.log('Beende Anruf');
+
+    // Hangup-Nachricht über DataChannel senden, bevor er geschlossen wird
+    if (sendSignal && dataChannel && dataChannel.readyState === 'open') {
+        dataChannel.send('__hangup__');
+    }
+
     if (dataChannel) {
         dataChannel.close();
         dataChannel = null;
@@ -188,43 +236,20 @@ const hangup = () => {
         remoteStream.getTracks().forEach(track => track.stop());
         remoteStream = null;
     }
-    // Deaktiviere die Chat-UI-Elemente
+    // Deaktiviere Chat-UI-Elemente
     document.querySelector('#chat-input').disabled = true;
     document.querySelector('#send-button').disabled = true;
-    // Leere die Video-Elemente
+    // Leere Video-Elemente
     localVideoEl.srcObject = null;
     remoteVideoEl.srcObject = null;
     // Entferne alle Chat-Nachrichten
     document.querySelector('#chat-messages').innerHTML = '';
-    // Setze den Zustand zurück
+    // Setze Zustand zurück
     didIOffer = false;
-    console.log('Call ended');
-};
+    console.log('Anruf beendet');
 
-
-
-// Event Listener für den "Call"-Button
-document.querySelector('#call').addEventListener('click', call);
-
-// Event Listener für den "Hangup"-Button
-document.querySelector('#hangup').addEventListener('click', hangup);
-
-document.querySelector('#send-button').addEventListener('click', () => {
-    const input = document.querySelector('#chat-input');
-    const message = input.value;
-    if (message && dataChannel && dataChannel.readyState === 'open') {
-        dataChannel.send(message);
-        const chatMessages = document.querySelector('#chat-messages');
-        const messageEl = document.createElement('div');
-        messageEl.textContent = 'You: ' + message;
-        chatMessages.appendChild(messageEl);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        input.value = '';
-    }
-});
-
-document.querySelector('#chat-input').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        document.querySelector('#send-button').click();
-    }
-});
+    // UI aktualisieren
+    hideHangupButton();
+    hideVideoAndChat();
+    showCallButton();
+}

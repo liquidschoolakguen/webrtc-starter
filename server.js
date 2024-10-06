@@ -1,59 +1,38 @@
+// server.js
 
 const fs = require('fs');
-const https = require('https')
+const https = require('https');
 const express = require('express');
 const app = express();
 const socketio = require('socket.io');
-app.use(express.static(__dirname))
+app.use(express.static(__dirname));
 
-//we need a key and cert to run https
-//we generated them with mkcert
-// $ mkcert create-ca
-// $ mkcert create-cert
+// Schlüssel und Zertifikat für HTTPS
 const key = fs.readFileSync('cert.key');
 const cert = fs.readFileSync('cert.crt');
 
-//we changed our express setup so we can use https
-//pass the key and cert to createServer on https
+// HTTPS-Server erstellen
 const expressServer = https.createServer({ key, cert }, app);
-//create our socket.io server... it will listen to our express port
+// Socket.io-Server erstellen
 const io = socketio(expressServer, {
     cors: {
         origin: [
             "https://localhost",
-            "https://192.168.146.225", //redmi hotspot
-            'https://10.11.11.148',// krankenhaus wlan
+            "https://192.168.146.225", // Redmi Hotspot
+            'https://10.11.11.148',    // Krankenhaus WLAN
         ],
-        //all headers are allowed
         allowedHeaders: ["*"],
         credentials: true,
-
-
-
-
         methods: ["GET", "POST"],
-
-
-
     }
 });
 expressServer.listen(8181);
 
-//offers will contain {}
-const offers = [
-    // offererUserName
-    // offer
-    // offerIceCandidates
-    // answererUserName
-    // answer
-    // answererIceCandidates
-];
-const connectedSockets = [
-    //username, socketId
-]
+// Angebote und verbundene Sockets verwalten
+const offers = [];
+const connectedSockets = [];
 
 io.on('connection', (socket) => {
-    // console.log("Someone has connected");
     const userName = socket.handshake.auth.userName;
     const password = socket.handshake.auth.password;
 
@@ -64,10 +43,9 @@ io.on('connection', (socket) => {
     connectedSockets.push({
         socketId: socket.id,
         userName
-    })
+    });
 
-    //a new client has joined. If there are any offers available,
-    //emit them out
+    // Verfügbare Angebote an neuen Client senden
     if (offers.length) {
         socket.emit('availableOffers', offers);
     }
@@ -80,70 +58,71 @@ io.on('connection', (socket) => {
             answererUserName: null,
             answer: null,
             answererIceCandidates: []
-        })
-        // console.log(newOffer.sdp.slice(50))
-        //send out to all connected sockets EXCEPT the caller
-        socket.broadcast.emit('newOfferAwaiting', offers.slice(-1))
-    })
+        });
+        // Angebot an alle anderen Clients senden
+        socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));
+    });
 
-    socket.on('newAnswer', (offerObj, ackFunction) => {
-        console.log(offerObj);
-        //emit this answer (offerObj) back to CLIENT1
-        //in order to do that, we need CLIENT1's socketid
-        const socketToAnswer = connectedSockets.find(s => s.userName === offerObj.offererUserName)
+    socket.on('newAnswer', async (offerObj, ackFunction) => {
+        const socketToAnswer = connectedSockets.find(s => s.userName === offerObj.offererUserName);
         if (!socketToAnswer) {
-            console.log("No matching socket")
+            console.log("Kein passender Socket gefunden");
             return;
         }
-        //we found the matching socket, so we can emit to it!
         const socketIdToAnswer = socketToAnswer.socketId;
-        //we find the offer to update so we can emit it
-        const offerToUpdate = offers.find(o => o.offererUserName === offerObj.offererUserName)
+        const offerToUpdate = offers.find(o => o.offererUserName === offerObj.offererUserName);
         if (!offerToUpdate) {
-            console.log("No OfferToUpdate")
+            console.log("Kein passendes Angebot gefunden");
             return;
         }
-        //send back to the answerer all the iceCandidates we have already collected
+        // ICE-Kandidaten an den Antwortenden zurücksenden
         ackFunction(offerToUpdate.offerIceCandidates);
-        offerToUpdate.answer = offerObj.answer
-        offerToUpdate.answererUserName = userName
-        //socket has a .to() which allows emiting to a "room"
-        //every socket has it's own room
-        socket.to(socketIdToAnswer).emit('answerResponse', offerToUpdate)
-    })
+        offerToUpdate.answer = offerObj.answer;
+        offerToUpdate.answererUserName = userName;
+        // Antwort an den Anrufer senden
+        socket.to(socketIdToAnswer).emit('answerResponse', offerToUpdate);
+    });
 
     socket.on('sendIceCandidateToSignalingServer', iceCandidateObj => {
         const { didIOffer, iceUserName, iceCandidate } = iceCandidateObj;
-        // console.log(iceCandidate);
         if (didIOffer) {
-            //this ice is coming from the offerer. Send to the answerer
+            // ICE-Kandidat vom Anrufer
             const offerInOffers = offers.find(o => o.offererUserName === iceUserName);
             if (offerInOffers) {
-                offerInOffers.offerIceCandidates.push(iceCandidate)
-                // 1. When the answerer answers, all existing ice candidates are sent
-                // 2. Any candidates that come in after the offer has been answered, will be passed through
+                offerInOffers.offerIceCandidates.push(iceCandidate);
                 if (offerInOffers.answererUserName) {
-                    //pass it through to the other socket
                     const socketToSendTo = connectedSockets.find(s => s.userName === offerInOffers.answererUserName);
                     if (socketToSendTo) {
-                        socket.to(socketToSendTo.socketId).emit('receivedIceCandidateFromServer', iceCandidate)
+                        socket.to(socketToSendTo.socketId).emit('receivedIceCandidateFromServer', iceCandidate);
                     } else {
-                        console.log("Ice candidate recieved but could not find answere")
+                        console.log("ICE-Kandidat erhalten, aber Antwortender nicht gefunden");
                     }
                 }
             }
         } else {
-            //this ice is coming from the answerer. Send to the offerer
-            //pass it through to the other socket
+            // ICE-Kandidat vom Antwortenden
             const offerInOffers = offers.find(o => o.answererUserName === iceUserName);
             const socketToSendTo = connectedSockets.find(s => s.userName === offerInOffers.offererUserName);
             if (socketToSendTo) {
-                socket.to(socketToSendTo.socketId).emit('receivedIceCandidateFromServer', iceCandidate)
+                socket.to(socketToSendTo.socketId).emit('receivedIceCandidateFromServer', iceCandidate);
             } else {
-                console.log("Ice candidate recieved but could not find offerer")
+                console.log("ICE-Kandidat erhalten, aber Anrufer nicht gefunden");
             }
         }
-        // console.log(offers)
-    })
+    });
 
-})
+    // Hangup-Ereignis wird nicht mehr über Socket behandelt
+
+    // Bei Disconnect aufräumen
+    socket.on('disconnect', () => {
+        console.log(`Benutzer ${userName} hat die Verbindung getrennt`);
+        const index = connectedSockets.findIndex(s => s.socketId === socket.id);
+        if (index !== -1) {
+            connectedSockets.splice(index, 1);
+        }
+        const offerIndex = offers.findIndex(o => o.offererUserName === userName || o.answererUserName === userName);
+        if (offerIndex !== -1) {
+            offers.splice(offerIndex, 1);
+        }
+    });
+});
