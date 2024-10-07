@@ -1,0 +1,60 @@
+# Redirect von www zu Hauptdomain (HTTP)
+server {
+    listen 80;
+    server_name www.lightspeek.de;
+
+    return 301 https://lightspeek.de$request_uri;
+}
+
+# Redirect von Hauptdomain (HTTP) zu HTTPS
+server {
+    listen 80;
+    server_name lightspeek.de;
+
+    return 301 https://lightspeek.de$request_uri;
+}
+
+# Redirect von www zu Hauptdomain (HTTPS)
+server {
+    listen 443 ssl;
+    server_name www.lightspeek.de;
+
+    ssl_certificate /etc/letsencrypt/live/lightspeek.de/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/lightspeek.de/privkey.pem;
+
+    return 301 https://lightspeek.de$request_uri;
+}
+
+# Hauptdomain (HTTPS) - Reverse Proxy zur Node.js-Anwendung über HTTPS
+server {
+    listen 443 ssl;
+    server_name lightspeek.de;
+
+    ssl_certificate /etc/letsencrypt/live/lightspeek.de/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/lightspeek.de/privkey.pem;
+
+    location / {
+        proxy_pass https://127.0.0.1:8181;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+
+        # Deaktiviere SSL-Zertifikatsprüfung für interne HTTPS-Verbindungen
+        proxy_ssl_verify off;
+    }
+
+    # Socket.io spezifische Konfiguration
+    location /socket.io/ {
+        proxy_pass https://127.0.0.1:8181/socket.io/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+
+        # Deaktiviere SSL-Zertifikatsprüfung für interne HTTPS-Verbindungen
+        proxy_ssl_verify off;
+    }
+}
