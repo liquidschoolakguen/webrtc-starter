@@ -35,7 +35,7 @@ try {
         }
     });
 
-    const HOST = process.env.URL || 'localhost';
+    const HOST = process.env.LOCALHOST|| 'localhost';
     const PORT = process.env.PORT || 8181;
 
     expressServer.listen(PORT, HOST, () => {
