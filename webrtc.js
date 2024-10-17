@@ -18,6 +18,11 @@ const peerConfiguration = {
                 'stun:stun.l.google.com:19302',
                 'stun:stun1.l.google.com:19302'
             ]
+        },
+        {
+            urls: 'turn:138.68.104.196:3478', // Deine TURN-Server-Adresse
+            username: 'testuser',             // Dein TURN-Server-Benutzername
+            credential: 'testpass'            // Dein TURN-Server-Passwort
         }
     ]
 };
@@ -86,7 +91,7 @@ function fetchUserMedia() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: true,
-                 audio: true,
+                 audio: false,
             });
             localVideoEl.srcObject = stream;
             localStream = stream;

@@ -6,12 +6,21 @@ let socket;
 
 function initializeSocket(userName, password) {
     // Verbindung zum Signalisierungsserver herstellen
-   // socket = io.connect('https://127.0.0.1:8181/', {
-    socket = io.connect('https://192.168.146.225:8181/', {
+
+
+
+    socket = io({
         auth: {
             userName, password
-        }
+        },
+        secure: true, // Falls HTTPS verwendet wird
+        transports: ['websocket', 'polling']
     });
+
+
+
+
+
 
     // Socket-Ereignisse einrichten
     setupSocketEvents();
