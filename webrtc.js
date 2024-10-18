@@ -7,6 +7,7 @@ let remoteStream;
 let peerConnection;
 let didIOffer = false;
 let dataChannel;
+let earlyHangup = false;
 
 const localVideoEl = document.querySelector('#local-video');
 const remoteVideoEl = document.querySelector('#remote-video');
@@ -15,8 +16,65 @@ const peerConfiguration = {
     iceServers: [
         {
             urls: [
-                'stun:stun.l.google.com:19302',
-                'stun:stun1.l.google.com:19302'
+                "stun:stun.l.google.com:19302",
+                "stun:stun.l.google.com:5349",
+                "stun:stun1.l.google.com:3478",
+                "stun:stun1.l.google.com:5349",
+                "stun:stun2.l.google.com:19302",
+                "stun:stun2.l.google.com:5349",
+                "stun:stun3.l.google.com:3478",
+                "stun:stun3.l.google.com:5349",
+                "stun:stun4.l.google.com:19302",
+                "stun:stun4.l.google.com:5349",
+                "stun:stun.1und1.de:3478",
+                "stun:stun.gmx.net:3478",
+                "stun:stun1.l.google.com:19302",
+                "stun:stun2.l.google.com:19302",
+                "stun:stun3.l.google.com:19302",
+                "stun:stun4.l.google.com:19302",
+                "stun:23.21.150.121:3478",
+                "stun:iphone-stun.strato-iphone.de:3478",
+                "stun:numb.viagenie.ca:3478",
+                "stun:stun.12connect.com:3478",
+                "stun:stun.12voip.com:3478",
+                "stun:stun.1und1.de:3478",
+                "stun:stun.2talk.co.nz:3478",
+                "stun:stun.2talk.com:3478",
+                "stun:stun.3clogic.com:3478",
+                "stun:stun.3cx.com:3478",
+                "stun:stun.a-mm.tv:3478",
+                "stun:stun.aa.net.uk:3478",
+                "stun:stun.acrobits.cz:3478",
+                "stun:stun.actionvoip.com:3478",
+                "stun:stun.advfn.com:3478",
+                "stun:stun.aeta-audio.com:3478",
+                "stun:stun.aeta.com:3478",
+                "stun:stun.altar.com.pl:3478",
+                "stun:stun.annatel.net:3478",
+                "stun:stun.antisip.com:3478",
+                "stun:stun.arbuz.ru:3478",
+                "stun:stun.avigora.fr:3478",
+                "stun:stun.awa-shima.com:3478",
+                "stun:stun.b2b2c.ca:3478",
+                "stun:stun.bahnhof.net:3478",
+                "stun:stun.barracuda.com:3478",
+                "stun:stun.bluesip.net:3478",
+                "stun:stun.bmwgs.cz:3478",
+                "stun:stun.botonakis.com:3478",
+                "stun:stun.budgetsip.com:3478",
+                "stun:stun.cablenet-as.net:3478",
+                "stun:stun.callromania.ro:3478",
+                "stun:stun.callwithus.com:3478",
+                "stun:stun.chathelp.ru:3478",
+                "stun:stun.cheapvoip.com:3478",
+                "stun:stun.ciktel.com:3478",
+                "stun:stun.cloopen.com:3478",
+                "stun:stun.comfi.com:3478",
+                "stun:stun.commpeak.com:3478",
+                "stun:stun.comtube.com:3478",
+                "stun:stun.comtube.ru:3478",
+                "stun:stun.cope.es:3478",
+                "stun:stun.counterpath.com:3478"
             ]
         },
         {
@@ -32,7 +90,7 @@ function initializeWebRTC() {
 }
 
 // Funktion zum Starten eines Anrufs
-async function call() {
+async function call() {//new offer
     await fetchUserMedia();
     didIOffer = true;
     await createPeerConnection();
@@ -40,16 +98,28 @@ async function call() {
     try {
         console.log("Erstelle Angebot...");
         const offer = await peerConnection.createOffer();
-        console.log(offer);
+        //console.log(offer);
         await peerConnection.setLocalDescription(offer);
         socket.emit('newOffer', offer); // Angebot an Signalisierungsserver senden
 
         // UI aktualisieren
-        showHangupButton();
-        hideCallButton();
+
+        showEarlyHangupButton();
+        hideCallWithOptions();
     } catch (err) {
         console.log(err);
     }
+}
+
+
+async function cancelCall(){
+    console.log("... Angebot zurückgezogen"+ userName);
+    socket.emit('cancelOffer', userName);
+    didIOffer = false;
+    socket.disconnect();
+    console.log('Socket-Verbindung geschlossen');
+    hideWaitingScreen();
+    showLandingScreen();
 }
 
 // Funktion zum Beantworten eines Angebots
@@ -59,30 +129,41 @@ async function answerOffer(offerObj) {
     await createPeerConnection(offerObj);
     const answer = await peerConnection.createAnswer({});
     await peerConnection.setLocalDescription(answer);
-    console.log(offerObj);
-    console.log(answer);
+    //console.log(offerObj);
+    //console.log(answer);
     offerObj.answer = answer;
     const offerIceCandidates = await socket.emitWithAck('newAnswer', offerObj);
     offerIceCandidates.forEach(c => {
         peerConnection.addIceCandidate(c);
-        console.log("====== ICE-Kandidat hinzugefügt ======");
+       // console.log("====== ICE-Kandidat hinzugefügt ======");
     });
-    console.log(offerIceCandidates);
+    //console.log(offerIceCandidates);
 
     // UI aktualisieren
     showHangupButton();
-    hideCallButton();
+    hideCallWithOptions();
     hideAnswerButtons();
 }
 
 // Funktion zum Hinzufügen einer Antwort
 async function addAnswer(offerObj) {
-    await peerConnection.setRemoteDescription(offerObj.answer);
 
+    await peerConnection.setRemoteDescription(offerObj.answer);
+    if (earlyHangup) {
+        console.log("ich will doch nicht mehr");
+
+
+
+
+    } else {
+        console.log("ja bereit zu tel");
+        showHangupButton();
+        hideCallWithOptions();
+        hideAnswerButtons();
+    }
     // UI aktualisieren
-    showHangupButton();
-    hideCallButton();
-    hideAnswerButtons();
+
+
 }
 
 // Funktion zum Abrufen des lokalen Medienstreams
@@ -91,7 +172,7 @@ function fetchUserMedia() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: true,
-                 audio: false,
+                audio: false,
             });
             localVideoEl.srcObject = stream;
             localStream = stream;
@@ -127,13 +208,13 @@ function createPeerConnection(offerObj) {
         });
 
         peerConnection.addEventListener("signalingstatechange", (event) => {
-            console.log(event);
-            console.log(peerConnection.signalingState);
+            //console.log(event);
+            //console.log(peerConnection.signalingState);
         });
 
         peerConnection.addEventListener('icecandidate', e => {
-            console.log('........ ICE-Kandidat gefunden! ......');
-            console.log(e);
+            //console.log('........ ICE-Kandidat gefunden! ......');
+            //console.log(e);
             if (e.candidate) {
                 socket.emit('sendIceCandidateToSignalingServer', {
                     iceCandidate: e.candidate,
@@ -144,11 +225,11 @@ function createPeerConnection(offerObj) {
         });
 
         peerConnection.addEventListener('track', e => {
-            console.log("Empfange Track vom anderen Peer!");
-            console.log(e);
+           // console.log("Empfange Track vom anderen Peer!");
+           // console.log(e);
             e.streams[0].getTracks().forEach(track => {
                 remoteStream.addTrack(track, remoteStream);
-                console.log("Track erfolgreich hinzugefügt");
+               // console.log("Track erfolgreich hinzugefügt");
             });
         });
 
@@ -160,10 +241,9 @@ function createPeerConnection(offerObj) {
                 console.log('Socket-Verbindung geschlossen');
 
                 // UI aktualisieren
-                showHangupButton();
-                hideCallButton();
-                hideAnswerButtons();
-                showVideoAndChat();
+
+                hideWaitingScreen();
+                showWebRTCScreen();
             }
         });
 
@@ -177,9 +257,16 @@ function createPeerConnection(offerObj) {
 // Funktion zum Einrichten des DataChannels
 function setupDataChannel() {
     dataChannel.onopen = () => {
-        console.log('DataChannel ist offen');
-        document.querySelector('#chat-input').disabled = false;
-        document.querySelector('#send-button').disabled = false;
+       // console.log('DataChannel ist offen');
+        if(earlyHangup){
+            hangup(true);
+            earlyHangup = false;
+        }
+        else{
+
+            document.querySelector('#chat-input').disabled = false;
+            document.querySelector('#send-button').disabled = false;
+        }
     };
 
     dataChannel.onmessage = (event) => {
@@ -213,7 +300,7 @@ function setupDataChannel() {
 // Funktion zum Hinzufügen eines neuen ICE-Kandidaten
 function addNewIceCandidate(iceCandidate) {
     peerConnection.addIceCandidate(iceCandidate);
-    console.log("====== ICE-Kandidat hinzugefügt ======");
+   // console.log("====== ICE-Kandidat hinzugefügt ======");
 }
 
 // Funktion zum Beenden des Anrufs
@@ -222,6 +309,7 @@ function hangup(sendSignal = true) {
 
     // Hangup-Nachricht über DataChannel senden, bevor er geschlossen wird
     if (sendSignal && dataChannel && dataChannel.readyState === 'open') {
+        console.log('Beende Anruf__HANGUP');
         dataChannel.send('__hangup__');
     }
 
@@ -254,7 +342,9 @@ function hangup(sendSignal = true) {
     console.log('Anruf beendet');
 
     // UI aktualisieren
-    hideHangupButton();
-    hideVideoAndChat();
-    showCallButton();
+    //hideHangupButton();
+    //hideVideoAndChat();
+    hideWebRTCScreen();
+    showLandingScreen();
+    //showConnectButton();
 }

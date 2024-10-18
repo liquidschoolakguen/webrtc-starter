@@ -1,43 +1,44 @@
 // ui.js
 
 // Verwaltet die Benutzeroberfläche, einschließlich Event Listener für Buttons, Aktualisierung der UI-Elemente und Handhabung von Benutzereingaben
+const userName = "User-" + Math.floor(Math.random() * 100000);
+const password = "x";
 
-function initializeUI() {
+function initializeUI(userName, password) {
+  // Benutzername und Passwort festlegen
+
+  //document.querySelector('#user-name').innerHTML = userName;
   // Event Listener für den "Verbinde mich"-Button
-  document.querySelector('#connect').addEventListener('click', async () => {
-      try {
-          // Socket-Verbindung herstellen
-          await initializeSocket(userName, password);
-          // UI aktualisieren
-          hideConnectButton();
-          showCallButton();
-      } catch (err) {
-          console.error('Fehler beim Herstellen der Socket-Verbindung:', err);
-      }
-  });
+  document.querySelector('#connect').addEventListener('click', initializeS);
 
-  // Event Listener für den "Call"-Button
+  // Event Listener für die neuen Call-Buttons
   document.querySelector('#call').addEventListener('click', call);
+
+
 
   // Event Listener für den "Hangup"-Button
   document.querySelector('#hangup').addEventListener('click', () => hangup(true));
+
+  document.querySelector('#early-hangup').addEventListener('click', cancelCall);
 
   // Event Listener für den "Send"-Button
   document.querySelector('#send-button').addEventListener('click', sendMessage);
 
   // Optional: Nachrichten mit der Eingabetaste senden
   document.querySelector('#chat-input').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-          sendMessage();
-      }
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
   });
 
   // UI initialisieren
-  showConnectButton();
-  hideCallButton();
-  hideHangupButton();
-  hideVideoAndChat();
-  hideAnswerButtons();
+  createConnectButton();
+  showLandingScreen()
+  //showConnectButton();
+  // hideCallOptions();
+  // hideHangupButton();
+  // hideVideoAndChat();
+  // hideAnswerButtons();
 }
 
 // Funktion zum Senden einer Chat-Nachricht
@@ -45,13 +46,13 @@ function sendMessage() {
   const input = document.querySelector('#chat-input');
   const message = input.value;
   if (message && dataChannel && dataChannel.readyState === 'open') {
-      dataChannel.send(message);
-      const chatMessages = document.querySelector('#chat-messages');
-      const messageEl = document.createElement('div');
-      messageEl.textContent = 'You: ' + message;
-      chatMessages.appendChild(messageEl);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      input.value = '';
+    dataChannel.send(message);
+    const chatMessages = document.querySelector('#chat-messages');
+    const messageEl = document.createElement('div');
+    messageEl.textContent = 'You: ' + message;
+    chatMessages.appendChild(messageEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    input.value = '';
   }
 }
 
@@ -61,21 +62,65 @@ function createOfferEls(offers) {
   const answerEl = document.querySelector('#answer');
   answerEl.innerHTML = '';
   offers.forEach(o => {
-      console.log(o);
-      const newOfferEl = document.createElement('button');
-      newOfferEl.className = 'btn btn-success';
-      //newOfferEl.textContent = `Answer ${o.offererUserName}`;
-      newOfferEl.textContent = `Ok, jetzt nochmal clicken, dann kommt Mithat`;
-      newOfferEl.addEventListener('click', () => answerOffer(o));
-      answerEl.appendChild(newOfferEl);
+    //console.log(o);
+    const newOfferEl = document.createElement('button');
+    newOfferEl.className = 'btn btn-success';
+    //newOfferEl.textContent = `Answer ${o.offererUserName}`;
+    newOfferEl.textContent = `Ok, jetzt nochmal clicken, dann kommt Mithat`;
+    newOfferEl.addEventListener('click', () => answerOffer(o));
+    answerEl.appendChild(newOfferEl);
 
-      // UI aktualisieren
-      hideCallButton();
-      hideHangupButton();
-      hideVideoAndChat();
-      hideConnectButton();
+    // UI aktualisieren
+    hideCallWithOptions();
+    //hideHangupButton();
+    //hideVideoAndChat();
+    //hideConnectButton();
   });
 }
+
+
+function createConnectButton() {
+  // Antwortbereich leeren
+  const connectButtonEl = document.querySelector('#connect');
+  connectButtonEl.textContent = `Connect`;
+
+}
+
+function showLandingScreen(){
+showConnectButton();
+}
+
+function hideLandingScreen(){
+hideConnectButton();
+}
+
+
+function showWaitingScreen(){
+  showCallWithOptions()
+}
+
+function hideWaitingScreen(){
+  hideCallWithOptions();
+  hideAnswerButtons();
+  hideEarlyHangupButton();
+}
+
+
+
+
+
+function showWebRTCScreen(){
+  showHangupButton();
+  hideCallWithOptions();
+  hideAnswerButtons();
+  showVideoAndChat();
+}
+
+function hideWebRTCScreen(){
+hideVideoAndChat();
+hideHangupButton();
+}
+
 
 // UI-Helper-Funktionen
 function showConnectButton() {
@@ -86,13 +131,16 @@ function hideConnectButton() {
   document.querySelector('#connect').style.display = 'none';
 }
 
-function showCallButton() {
-  document.querySelector('#call').style.display = 'inline-block';
+function showCallWithOptions() {
+  document.querySelector('#callWithOptions').style.display = 'inline-block';
+
 }
 
-function hideCallButton() {
-  document.querySelector('#call').style.display = 'none';
+function hideCallWithOptions() {
+  document.querySelector('#callWithOptions').style.display = 'none';
+
 }
+
 
 function showHangupButton() {
   document.querySelector('#hangup').style.display = 'inline-block';
@@ -100,6 +148,14 @@ function showHangupButton() {
 
 function hideHangupButton() {
   document.querySelector('#hangup').style.display = 'none';
+}
+
+function showEarlyHangupButton() {
+  document.querySelector('#early-hangup').style.display = 'inline-block';
+}
+
+function hideEarlyHangupButton() {
+  document.querySelector('#early-hangup').style.display = 'none';
 }
 
 function showVideoAndChat() {

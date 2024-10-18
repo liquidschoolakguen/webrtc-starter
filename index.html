@@ -13,10 +13,28 @@
 <body>
     <div class="container">
         <div class="row mb-3 mt-3 justify-content-md-center">
-            <div id="user-name" class="col-auto"></div>
-            <button id="connect" class="btn btn-primary col-auto">Hallo Jana :)  Drück mich</button>
-            <button id="call" class="btn btn-success col-auto">Call!</button>
+            <button id="connect" class="btn btn-primary col-auto">Hallo Jana</button>
+
+
+
+            <div id="callWithOptions" class="col-auto">
+                <button id="call" class="btn btn-success col-auto">Call</button>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="videoCheck" value="video">
+                  <label class="form-check-label" for="videoCheck">Video</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="audioCheck" value="audio">
+                  <label class="form-check-label" for="audioCheck">Audio</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="chatCheck" value="chat">
+                  <label class="form-check-label" for="chatCheck">Chat</label>
+                </div>
+            </div>
+
             <button id="hangup" class="btn btn-danger col-auto">Hangup</button>
+            <button id="early-hangup" class="btn btn-danger col-auto">Early Hangup</button>
             <div id="answer" class="col"></div>
         </div>
         <div id="videos" class="row">

@@ -75,6 +75,16 @@ try {
             socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));
         });
 
+
+
+        socket.on('cancelOffer', userName => {
+            console.log("cancelOffer");
+            // der user hat das angebot zurückgezogen. das offers array muss um das angebot reduziert werden, welcher von userName stammt
+            offers = offers.filter(o => o.offererUserName !== userName);
+            // Angebot an alle anderen Clients senden
+            socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));
+        });
+
         socket.on('newAnswer', async (offerObj, ackFunction) => {
             const socketToAnswer = connectedSockets.find(s => s.userName === offerObj.offererUserName);
             if (!socketToAnswer) {
@@ -127,7 +137,7 @@ try {
 
         // Bei Disconnect aufräumen
         socket.on('disconnect', () => {
-            console.log(`Benutzer ${userName} hat die Verbindung getrennt`);
+           // console.log(`Benutzer ${userName} hat die Verbindung getrennt`);
             const index = connectedSockets.findIndex(s => s.socketId === socket.id);
             if (index !== -1) {
                 connectedSockets.splice(index, 1);

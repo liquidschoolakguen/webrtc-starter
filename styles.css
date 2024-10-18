@@ -27,5 +27,9 @@
 }
 
 #answer{
-    
+
+}
+
+#connect, #callWithOptions, #hangup, #early-hangup, #videos, #chat {
+    display: none;
 }
