@@ -213,15 +213,23 @@ function createPeerConnection(offerObj = null, options = {}) {
                 peerConnection.addTrack(track, localStream);
             });
         }
+
+                // DataChannel-Optionen für zuverlässige und geordnete Übertragung
+                const dataChannelOptions = {
+                    ordered: true,       // Daten werden in der Reihenfolge empfangen
+                    maxRetransmits: 10 // Unbegrenzte Wiederholungsversuche für zuverlässige Übertragung
+                };
+
+
         // Immer den dataChannelSystem erstellen
         if (didIOffer) {
             // Wir sind der Anrufer
-            dataChannelSystem = peerConnection.createDataChannel('system');
+            dataChannelSystem = peerConnection.createDataChannel('system', dataChannelOptions);
             setupDataChannelSystem(dataChannelSystem);
 
             if (chatEnabled) {
                 // Nur erstellen, wenn Chat aktiviert ist
-                dataChannelChat = peerConnection.createDataChannel('chat');
+                dataChannelChat = peerConnection.createDataChannel('chat', dataChannelOptions);
                 setupDataChannelChat(dataChannelChat);
             }
         } else {
@@ -325,6 +333,8 @@ function setupDataChannelSystem(channel) {
     };
 }
 
+// webrtc.js
+
 function setupDataChannelChat(channel) {
     channel.onopen = () => {
         console.log('dataChannelChat ist offen');
@@ -335,18 +345,37 @@ function setupDataChannelChat(channel) {
     channel.onmessage = (event) => {
         console.log('Chatnachricht empfangen:', event.data);
 
-        const chatMessages = document.querySelector('#chat-messages');
-        const messageEl = document.createElement('div');
-        messageEl.textContent = 'Remote: ' + event.data;
-        chatMessages.appendChild(messageEl);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        try {
+            const messageObj = JSON.parse(event.data);
+            if (messageObj.type === 'message') {
+                // Verarbeite die empfangene Nachricht
+                const chatMessages = document.querySelector('#chat-messages');
+                const messageEl = document.createElement('div');
+                messageEl.textContent = 'Remote: ' + messageObj.data;
+                chatMessages.appendChild(messageEl);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Sende eine ACK-Nachricht zurück
+                const ackObj = {
+                    type: 'ack',
+                    id: messageObj.id
+                };
+                channel.send(JSON.stringify(ackObj));
+            } else if (messageObj.type === 'ack') {
+                // Verarbeite die ACK-Nachricht
+                const ackedMessageId = messageObj.id;
+                // Rufe die UI-Funktion auf, um die Nachricht zu markieren
+
+                    markMessageAsAcked(ackedMessageId);
+
+            }
+        } catch (error) {
+            console.error('Fehler beim Verarbeiten der Chatnachricht:', error);
+        }
     };
 
     channel.onclose = () => {
         //console.log('dataChannelChat ist geschlossen');
-
-
-
         document.querySelector('#chat-input').disabled = true;
         document.querySelector('#send-button').disabled = true;
     };
@@ -355,6 +384,7 @@ function setupDataChannelChat(channel) {
         // console.error('dataChannelChat Fehler:', error);
     };
 }
+
 
 
 // Funktion zum Hinzufügen eines neuen ICE-Kandidaten

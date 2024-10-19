@@ -199,20 +199,60 @@ function fire(){
   showLandingScreen();
 }
 
-// Funktion zum Senden einer Chat-Nachricht
+// ui.js
+
 function sendMessage() {
   const input = document.querySelector('#chat-input');
-  const message = input.value;
-  if (message && dataChannelChat && dataChannelChat.readyState === 'open') {
-    dataChannelChat.send(message);
+  const messageText = input.value.trim();
+  if (messageText && dataChannelChat && dataChannelChat.readyState === 'open') {
+    const messageId = generateUniqueId();
+    const messageObj = {
+      type: 'message',
+      id: messageId,
+      data: messageText
+    };
+
+    // Sende die Nachricht als JSON-String
+    dataChannelChat.send(JSON.stringify(messageObj));
+
+    // Füge die Nachricht zum UI hinzu und speichere die Referenz
     const chatMessages = document.querySelector('#chat-messages');
     const messageEl = document.createElement('div');
-    messageEl.textContent = 'You: ' + message;
+    messageEl.id = messageId; // Setze die ID für spätere Referenz
+    messageEl.textContent = 'You: ' + messageText;
+    messageEl.style.color = 'black'; // Standardfarbe
     chatMessages.appendChild(messageEl);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Speichere die Nachricht für spätere Aktualisierungen
+    sentMessages[messageId] = messageEl;
+
+    // Leere das Eingabefeld
     input.value = '';
   }
 }
+
+
+
+// ui.js
+
+// Funktion zum Markieren einer Nachricht als bestätigt
+function markMessageAsAcked(messageId) {
+  const messageEl = sentMessages[messageId];
+  if (messageEl) {
+    messageEl.style.color = 'red'; // Ändere die Schriftfarbe zu Grün
+    // Optional: Entferne die Nachricht aus dem Tracking-Objekt
+    delete sentMessages[messageId];
+  }
+}
+
+// ui.js
+
+// Stelle die Funktion global zur Verfügung
+//window.markMessageAsAcked = markMessageAsAcked;
+
+
+
 
 // Funktion zum Erstellen von Antwort-Buttons für Angebote
 function createOfferEls(offers) {
@@ -354,3 +394,14 @@ function updateUIForOptions(options) {
     document.querySelector('#chat').style.display = 'none';
   }
 }
+
+
+// ui.js
+
+// Eindeutige ID für jede Nachricht generieren
+function generateUniqueId() {
+  return 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
+}
+
+// Objekt zur Verfolgung gesendeter Nachrichten
+const sentMessages = {};
