@@ -26,7 +26,104 @@ function initializeUI(userName, password) {
     // Event Listener für den "Send"-Button
     document.querySelector('#send-button').addEventListener('click', sendMessage);
 
-    // Optional: Nachrichten mit der Eingabetaste senden
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const inputElement = document.querySelector('#chat-input2');
+    const displayElement = document.querySelector('#chat-input-display');
+
+    inputElement.addEventListener('input', updateDisplay);
+    inputElement.addEventListener('click', updateDisplay);
+    inputElement.addEventListener('keyup', updateDisplay);
+    inputElement.addEventListener('select', updateDisplay);
+
+    let lastInputValue = ''; // Speichert den letzten Eingabewert
+
+    function updateDisplay() {
+      //timestamp
+      const timestamp = new Date().toLocaleTimeString();
+      console.log('updateDisplay', timestamp);
+
+        const inputValue = inputElement.value;
+        const cursorStart = inputElement.selectionStart;
+        const cursorEnd = inputElement.selectionEnd;
+
+        // Leere das Display-Element
+        displayElement.innerHTML = '';
+
+        // Finde das neu hinzugefügte Zeichen
+        let newCharIndex = -1;
+        if (inputValue.length > lastInputValue.length) {
+            for (let i = 0; i < inputValue.length; i++) {
+                if (i >= lastInputValue.length || inputValue[i] !== lastInputValue[i]) {
+                    newCharIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Erstelle für jedes Zeichen ein Span-Element
+        for (let i = 0; i < inputValue.length; i++) {
+            const charSpan = document.createElement('span');
+            charSpan.textContent = inputValue[i];
+
+            // Markiere ausgewählten Text
+            if (i >= cursorStart && i < cursorEnd) {
+                charSpan.classList.add('selected');
+            }
+
+            // Füge die Klasse für den Schreibmaschineneffekt nur zum neuen Zeichen hinzu
+            if (i === newCharIndex) {
+                charSpan.classList.add('typewriter-char');
+                // Trigger a reflow to restart the animation
+                void charSpan.offsetWidth;
+            }
+
+            displayElement.appendChild(charSpan);
+        }
+
+        // Füge den blinkenden Cursor hinzu
+        const cursorElement = document.createElement('span');
+        cursorElement.classList.add('cursor');
+        if (cursorStart === cursorEnd) {
+          // Berechne die Position des Cursors von rechts
+
+          //console.log('cursorStart', cursorStart);
+          //console.log('childNodes.length', displayElement.childNodes.length);
+          const cursorPosition = inputValue.length - cursorStart;
+
+          if (cursorPosition === 0) {
+              // Wenn der Cursor ganz rechts ist, fügen wir ihn am Ende ein
+              //console.log('ok gleich', displayElement.childNodes[cursorPosition]);
+              displayElement.appendChild(cursorElement);
+          } else {
+              // Ansonsten fügen wir ihn an der berechneten Position ein
+              //if (cursorPosition < displayElement.childNodes.length) {
+               // console.log('cursorPosition', cursorPosition);
+                //console.log('insertBefore', displayElement.childNodes[displayElement.childNodes.length - cursorPosition]);
+                  displayElement.insertBefore(cursorElement, displayElement.childNodes[displayElement.childNodes.length - cursorPosition]);
+
+          }
+      }
+
+        // Aktualisiere den gespeicherten Eingabewert
+        lastInputValue = inputValue;
+    }
+
+    // Behalten Sie das keypress-Event für die Enter-Taste bei
     document.querySelector('#chat-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             sendMessage();
