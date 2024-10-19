@@ -1,19 +1,19 @@
-#videos{
+#videos {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2em;
 }
 
-.video-player{
+.video-player {
     background-color: black;
     width: 100%;
 }
 
-#video-wrapper{
+#video-wrapper {
     position: relative;
 }
 
-#waiting{
+#waiting {
     display: none;
     position: absolute;
     left: 0;
@@ -23,13 +23,21 @@
     margin: auto;
     width: 240px;
     height: 40px;
+}
+
+#answer {
 
 }
 
-#answer{
 
-}
 
-#connect, #callWithOptions, #hangup, #early-hangup, #videos, #chat {
+
+#connect,
+#callWithOptions,
+#hangup,
+#early-hangup,
+#main_screen,
+#videos,
+#chat {
     display: none;
 }

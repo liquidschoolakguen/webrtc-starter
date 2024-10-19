@@ -1,4 +1,5 @@
-//https://chatgpt.com/c/6701c054-2124-8011-9570-fbd4a2cf1034?conversationId=6701c054-2124-8011-9570-fbd4a2cf1034&model=o1-mini
+// server.js
+
 require('dotenv').config();
 const fs = require('fs');
 const https = require('https');
@@ -27,7 +28,6 @@ try {
         cors: {
             origin: [
                 process.env.URL,
-
             ],
             allowedHeaders: ["*"],
             credentials: true,
@@ -35,7 +35,7 @@ try {
         }
     });
 
-    const HOST = process.env.LOCALHOST|| 'localhost';
+    const HOST = process.env.LOCALHOST || 'localhost';
     const PORT = process.env.PORT || 8181;
 
     expressServer.listen(PORT, HOST, () => {
@@ -62,27 +62,28 @@ try {
             socket.emit('availableOffers', offers);
         }
 
-        socket.on('newOffer', newOffer => {
-            offers.push({
+        socket.on('newOffer', newOfferObj => {
+            const { offer, offerOptions } = newOfferObj;
+            const newOfferEntry = {
                 offererUserName: userName,
-                offer: newOffer,
+                offer: offer,
+                offerOptions: offerOptions, // Optionen speichern
                 offerIceCandidates: [],
                 answererUserName: null,
                 answer: null,
                 answererIceCandidates: []
-            });
+            };
+            offers.push(newOfferEntry);
             // Angebot an alle anderen Clients senden
-            socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));
+            socket.broadcast.emit('newOfferAwaiting', [newOfferEntry]);
         });
-
-
 
         socket.on('cancelOffer', userName => {
             console.log("cancelOffer");
-            // der user hat das angebot zurückgezogen. das offers array muss um das angebot reduziert werden, welcher von userName stammt
+            // Entfernen des Angebots von diesem Benutzer
             offers = offers.filter(o => o.offererUserName !== userName);
-            // Angebot an alle anderen Clients senden
-            socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));
+            // Aktualisierte Angebote an alle anderen Clients senden
+            socket.broadcast.emit('newOfferAwaiting', offers);
         });
 
         socket.on('newAnswer', async (offerObj, ackFunction) => {
@@ -137,7 +138,6 @@ try {
 
         // Bei Disconnect aufräumen
         socket.on('disconnect', () => {
-           // console.log(`Benutzer ${userName} hat die Verbindung getrennt`);
             const index = connectedSockets.findIndex(s => s.socketId === socket.id);
             if (index !== -1) {
                 connectedSockets.splice(index, 1);
@@ -148,6 +148,8 @@ try {
             }
         });
     });
+
+    app.get('/favicon.ico', (req, res) => res.status(204));
 
 } catch (err) {
     console.error('Fehler beim Starten des Servers:', err);

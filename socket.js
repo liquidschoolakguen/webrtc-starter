@@ -4,23 +4,17 @@
 
 let socket;
 
-
 async function initializeS() {
     try {
-      // Socket-Verbindung herstellen
-      await initializeSocket(userName, password);
-      // UI aktualisieren
-      //hideConnectButton();
-      //showCallWithOptions();
-      hideLandingScreen();
-      showWaitingScreen();
+        // Socket-Verbindung herstellen
+        await initializeSocket(userName, password);
+        // UI aktualisieren
+        hideLandingScreen();
+        showWaitingScreen();
     } catch (err) {
-      console.error('Fehler beim Herstellen der Socket-Verbindung:', err);
+        console.error('Fehler beim Herstellen der Socket-Verbindung:', err);
     }
-  }
-
-
-
+}
 
 function initializeSocket(userName, password) {
     // Verbindung zum Signalisierungsserver herstellen
@@ -36,23 +30,20 @@ function initializeSocket(userName, password) {
     // Socket-Ereignisse einrichten
     setupSocketEvents();
     console.log("socket initialized");
-
-
 }
 
 function setupSocketEvents() {
     // Bei Verbindung verfügbare Angebote abrufen
     socket.on('availableOffers', offers => {
-       // console.log(offers);
         createOfferEls(offers);
     });
 
     // Neues Angebot erhalten
     socket.on('newOfferAwaiting', offers => {
-        if(offers.length > 0){
+        if (offers.length > 0) {
             createOfferEls(offers);
-        }else{
-            console.log("Keine Angebote vorhanden");
+        } else {
+            console.log("Keine Angebote mehr vorhanden");
             socket.disconnect();
             hideWaitingScreen();
             showLandingScreen();
@@ -61,43 +52,30 @@ function setupSocketEvents() {
 
     // Antwort auf Angebot erhalten
     socket.on('answerResponse', offerObj => {
-        //console.log("-----------------------" +offerObj.answer);
-        if(offerObj.answer){
+        if (offerObj.answer) {
             addAnswer(offerObj);
-        }else{
+        } else {
             console.log("Antwort nicht vorhanden");
         }
     });
 
     // ICE-Kandidat vom Server erhalten
     socket.on('receivedIceCandidateFromServer', iceCandidate => {
-       // console.log("---------------------------ICE");
         addNewIceCandidate(iceCandidate);
-        //console.log(iceCandidate);
     });
 
     socket.on('disconnect', (reason) => {
+        console.log('socket.disconnect()');
         if (reason === 'io server disconnect') {
-            // Der Server hat die Verbindung absichtlich getrennt
-           // console.log('Der Server hat die Verbindung getrennt');
-           // socket.connect(); // Optional: Versuchen Sie, die Verbindung wiederherzustellen
+            // Der Server hat die Verbindung getrennt
         } else {
             // Die Verbindung wurde aus einem anderen Grund getrennt
-          //  console.log('Die Verbindung wurde getrennt:', reason);
         }
     });
 
-
-
     socket.on('connect', () => {
-       // console.log('Verbindung zum Server hergestellt');
-
+        // Verbindung zum Server hergestellt
     });
-
-
-
-
-
 }
 
 // Exportiere socket, falls in anderen Modulen benötigt
