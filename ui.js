@@ -4,135 +4,199 @@
 const userName = "User-" + Math.floor(Math.random() * 100000);
 const password = "x";
 
+let isRecording = false;
+let recordedActions = [];
+
 function initializeUI(userName, password) {
-    // Event Listener für den "Verbinde mich"-Button
-    document.querySelector('#connect').addEventListener('click', initializeS);
+  // Event Listener für den "Verbinde mich"-Button
+  document.querySelector('#connect').addEventListener('click', initializeS);
 
-    // Event Listener für den "Call"-Button mit Optionen
-    document.querySelector('#call').addEventListener('click', () => {
-        const videoEnabled = document.querySelector('#videoCheck').checked;
-        const audioEnabled = document.querySelector('#audioCheck').checked;
-        const chatEnabled = document.querySelector('#chatCheck').checked;
+  // Event Listener für den "Call"-Button mit Optionen
+  document.querySelector('#call').addEventListener('click', () => {
+    const videoEnabled = document.querySelector('#videoCheck').checked;
+    const audioEnabled = document.querySelector('#audioCheck').checked;
+    const chatEnabled = document.querySelector('#chatCheck').checked;
 
-        // Rufen Sie die 'call'-Funktion mit den ausgewählten Optionen auf
-        call(videoEnabled, audioEnabled, chatEnabled);
-    });
+    // Rufen Sie die 'call'-Funktion mit den ausgewählten Optionen auf
+    call(videoEnabled, audioEnabled, chatEnabled);
+  });
 
-    // Event Listener für den "Hangup"-Button
-    document.querySelector('#hangup').addEventListener('click',  hangup);
+  // Event Listener für den "Hangup"-Button
+  document.querySelector('#hangup').addEventListener('click', hangup);
 
-    document.querySelector('#early-hangup').addEventListener('click', cancelCall);
+  document.querySelector('#early-hangup').addEventListener('click', cancelCall);
 
-    // Event Listener für den "Send"-Button
-    document.querySelector('#send-button').addEventListener('click', sendMessage);
+  // Event Listener für den "Send"-Button
+  document.querySelector('#send-button').addEventListener('click', sendMessage);
 
-
-
-
-
-
+  document.querySelector('#record-btn').addEventListener('click', startRecord);
+  document.querySelector('#stop-btn').addEventListener('click', stopRecord);
+  document.querySelector('#play-btn').addEventListener('click', playRecord);
 
 
 
+  function startRecord() {
+    document.querySelector('#chat-input2').disabled = false;
+    isRecording = true;
+    recordedActions = [];
+  }
 
+  function stopRecord() {
+    document.querySelector('#chat-input2').disabled = true;
+    isRecording = false;
+  }
 
+  function playRecord() {
+    if (recordedActions.length === 0) return;
 
+    const recordDisplay = document.querySelector('#chat-record-display');
+    recordDisplay.innerHTML = '';
+    let currentIndex = 0;
+    const startTime = recordedActions[0].timestamp;
 
-
-
-
-
-    const inputElement = document.querySelector('#chat-input2');
-    const displayElement = document.querySelector('#chat-input-display');
-
-    inputElement.addEventListener('input', updateDisplay);
-    inputElement.addEventListener('click', updateDisplay);
-    inputElement.addEventListener('keyup', updateDisplay);
-    inputElement.addEventListener('select', updateDisplay);
-
-    let lastInputValue = ''; // Speichert den letzten Eingabewert
-
-    function updateDisplay() {
-      //timestamp
-      const timestamp = new Date().toLocaleTimeString();
-      console.log('updateDisplay', timestamp);
-
-        const inputValue = inputElement.value;
-        const cursorStart = inputElement.selectionStart;
-        const cursorEnd = inputElement.selectionEnd;
-
-        // Leere das Display-Element
-        displayElement.innerHTML = '';
-
-        // Finde das neu hinzugefügte Zeichen
-        let newCharIndex = -1;
-        if (inputValue.length > lastInputValue.length) {
-            for (let i = 0; i < inputValue.length; i++) {
-                if (i >= lastInputValue.length || inputValue[i] !== lastInputValue[i]) {
-                    newCharIndex = i;
-                    break;
-                }
-            }
-        }
-
-        // Erstelle für jedes Zeichen ein Span-Element
-        for (let i = 0; i < inputValue.length; i++) {
-            const charSpan = document.createElement('span');
-            charSpan.textContent = inputValue[i];
-
-            // Markiere ausgewählten Text
-            if (i >= cursorStart && i < cursorEnd) {
-                charSpan.classList.add('selected');
-            }
-
-            // Füge die Klasse für den Schreibmaschineneffekt nur zum neuen Zeichen hinzu
-            if (i === newCharIndex) {
-                charSpan.classList.add('typewriter-char');
-                // Trigger a reflow to restart the animation
-                void charSpan.offsetWidth;
-            }
-
-            displayElement.appendChild(charSpan);
-        }
-
-        // Füge den blinkenden Cursor hinzu
-        const cursorElement = document.createElement('span');
-        cursorElement.classList.add('cursor');
-        if (cursorStart === cursorEnd) {
-          // Berechne die Position des Cursors von rechts
-
-          //console.log('cursorStart', cursorStart);
-          //console.log('childNodes.length', displayElement.childNodes.length);
-          const cursorPosition = inputValue.length - cursorStart;
-
-          if (cursorPosition === 0) {
-              // Wenn der Cursor ganz rechts ist, fügen wir ihn am Ende ein
-              //console.log('ok gleich', displayElement.childNodes[cursorPosition]);
-              displayElement.appendChild(cursorElement);
-          } else {
-              // Ansonsten fügen wir ihn an der berechneten Position ein
-              //if (cursorPosition < displayElement.childNodes.length) {
-               // console.log('cursorPosition', cursorPosition);
-                //console.log('insertBefore', displayElement.childNodes[displayElement.childNodes.length - cursorPosition]);
-                  displayElement.insertBefore(cursorElement, displayElement.childNodes[displayElement.childNodes.length - cursorPosition]);
-
-          }
+    function playNextAction() {
+      if (currentIndex >= recordedActions.length) {
+        return; // Wiedergabe beendet
       }
 
-        // Aktualisiere den gespeicherten Eingabewert
-        lastInputValue = inputValue;
+      const action = recordedActions[currentIndex];
+      const delay = action.timestamp - (currentIndex > 0 ? recordedActions[currentIndex - 1].timestamp : startTime);
+
+      setTimeout(() => {
+        updateDisplay(action.value, action.cursorStart, action.cursorEnd, recordDisplay);
+        currentIndex++;
+        playNextAction();
+      }, delay);
     }
 
-    // Behalten Sie das keypress-Event für die Enter-Taste bei
-    document.querySelector('#chat-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
+    playNextAction();
+  }
 
-    // UI initialisieren
-    createConnectButton();
-    showLandingScreen();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const inputElement = document.querySelector('#chat-input2');
+  const displayElement = document.querySelector('#chat-input-display');
+
+  inputElement.addEventListener('input', fire);
+  inputElement.addEventListener('click', fire);
+  inputElement.addEventListener('keyup', fire);
+  inputElement.addEventListener('select', fire);
+
+function fire(){
+
+  inputValue = inputElement.value;
+  cursorStart = inputElement.selectionStart;
+  cursorEnd = inputElement.selectionEnd;
+
+  updateDisplay(inputValue, cursorStart, cursorEnd);
+}
+
+
+
+
+  let lastInputValue = ''; // Speichert den letzten Eingabewert
+
+
+  function updateDisplay(inputValue, cursorStart, cursorEnd, targetElement = displayElement) {
+    //console.log('updateDisplay', inputValue, cursorStart, cursorEnd);
+
+
+   // Leere das Display-Element
+   targetElement.innerHTML = '';
+
+   // Finde die neu hinzugefügten Zeichen
+   let newCharIndices = [];
+   if (inputValue.length > lastInputValue.length) {
+     let firstDiff = -1;
+     for (let i = 0; i < inputValue.length; i++) {
+       if (i >= lastInputValue.length || inputValue[i] !== lastInputValue[i]) {
+         firstDiff = i;
+         break;
+       }
+     }
+     if (firstDiff !== -1) {
+       let numAdded = inputValue.length - lastInputValue.length;
+       for (let i = firstDiff; i < firstDiff + numAdded && i < inputValue.length; i++) {
+         newCharIndices.push(i);
+       }
+     }
+   }
+
+   // Erstelle für jedes Zeichen ein Span-Element
+   for (let i = 0; i < inputValue.length; i++) {
+     const charSpan = document.createElement('span');
+     charSpan.textContent = inputValue[i];
+
+     // Markiere ausgewählten Text
+     if (i >= cursorStart && i < cursorEnd) {
+       charSpan.classList.add('selected');
+     }
+
+     // Füge die Klasse für den Schreibmaschineneffekt zu allen neuen Zeichen hinzu
+     if (newCharIndices.includes(i)) {
+       charSpan.classList.add('typewriter-char');
+       // Trigger a reflow to restart the animation
+       void charSpan.offsetWidth;
+     }
+
+     targetElement.appendChild(charSpan);
+   }
+
+   // Füge den blinkenden Cursor hinzu
+   const cursorElement = document.createElement('span');
+   cursorElement.classList.add('cursor');
+   if (cursorStart === cursorEnd) {
+     // Berechne die Position des Cursors von rechts
+     const cursorPosition = inputValue.length - cursorStart;
+
+     if (cursorPosition === 0) {
+       // Wenn der Cursor ganz rechts ist, fügen wir ihn am Ende ein
+       targetElement.appendChild(cursorElement);
+     } else {
+       // Ansonsten fügen wir ihn an der berechneten Position ein
+       targetElement.insertBefore(
+         cursorElement,
+         targetElement.childNodes[targetElement.childNodes.length - cursorPosition]
+       );
+     }
+   }
+
+   // Aktualisiere den gespeicherten Eingabewert
+   lastInputValue = inputValue;
+
+   // Wenn wir aufnehmen, speichere die Aktion
+   if (isRecording && targetElement === displayElement) {
+     recordedActions.push({
+       value: inputValue,
+       cursorStart: cursorStart,
+       cursorEnd: cursorEnd,
+       timestamp: Date.now()
+     });
+   }
+  }
+
+  // Behalten Sie das keypress-Event für die Enter-Taste bei
+  document.querySelector('#chat-input').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  });
+
+  // UI initialisieren
+  createConnectButton();
+  showLandingScreen();
 }
 
 // Funktion zum Senden einer Chat-Nachricht
@@ -140,153 +204,153 @@ function sendMessage() {
   const input = document.querySelector('#chat-input');
   const message = input.value;
   if (message && dataChannelChat && dataChannelChat.readyState === 'open') {
-      dataChannelChat.send(message);
-      const chatMessages = document.querySelector('#chat-messages');
-      const messageEl = document.createElement('div');
-      messageEl.textContent = 'You: ' + message;
-      chatMessages.appendChild(messageEl);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      input.value = '';
+    dataChannelChat.send(message);
+    const chatMessages = document.querySelector('#chat-messages');
+    const messageEl = document.createElement('div');
+    messageEl.textContent = 'You: ' + message;
+    chatMessages.appendChild(messageEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    input.value = '';
   }
 }
 
 // Funktion zum Erstellen von Antwort-Buttons für Angebote
 function createOfferEls(offers) {
-    // Antwortbereich leeren
-    const answerEl = document.querySelector('#answer');
-    answerEl.innerHTML = '';
-    offers.forEach(o => {
-        const newOfferEl = document.createElement('button');
-        newOfferEl.className = 'btn btn-success';
+  // Antwortbereich leeren
+  const answerEl = document.querySelector('#answer');
+  answerEl.innerHTML = '';
+  offers.forEach(o => {
+    const newOfferEl = document.createElement('button');
+    newOfferEl.className = 'btn btn-success';
 
-        // Optionen extrahieren
-        let optionsText = '';
-        if (o.offerOptions) {
-            optionsText += o.offerOptions.videoEnabled ? 'Video ' : '';
-            optionsText += o.offerOptions.audioEnabled ? 'Audio ' : '';
-            optionsText += o.offerOptions.chatEnabled ? 'Chat ' : '';
-        }
+    // Optionen extrahieren
+    let optionsText = '';
+    if (o.offerOptions) {
+      optionsText += o.offerOptions.videoEnabled ? 'Video ' : '';
+      optionsText += o.offerOptions.audioEnabled ? 'Audio ' : '';
+      optionsText += o.offerOptions.chatEnabled ? 'Chat ' : '';
+    }
 
-        newOfferEl.textContent = `Annehmen von ${o.offererUserName} (${optionsText.trim()})`;
-        newOfferEl.addEventListener('click', () => answerOffer(o));
-        answerEl.appendChild(newOfferEl);
+    newOfferEl.textContent = `Annehmen von ${o.offererUserName} (${optionsText.trim()})`;
+    newOfferEl.addEventListener('click', () => answerOffer(o));
+    answerEl.appendChild(newOfferEl);
 
-        // UI aktualisieren
-        hideCallWithOptions();
-    });
+    // UI aktualisieren
+    hideCallWithOptions();
+  });
 }
 
 function createConnectButton() {
-    const connectButtonEl = document.querySelector('#connect');
-    connectButtonEl.textContent = `Connect`;
+  const connectButtonEl = document.querySelector('#connect');
+  connectButtonEl.textContent = `Connect`;
 }
 
 function showLandingScreen() {
-    showConnectButton();
+  showConnectButton();
 }
 
 function hideLandingScreen() {
-    hideConnectButton();
+  hideConnectButton();
 }
 
 function showWaitingScreen() {
-    showCallWithOptions();
+  showCallWithOptions();
 }
 
 function hideWaitingScreen() {
-    hideCallWithOptions();
-    hideAnswerButtons();
-    hideEarlyHangupButton();
+  hideCallWithOptions();
+  hideAnswerButtons();
+  hideEarlyHangupButton();
 }
 
 function showWebRTCScreen() {
-    showHangupButton();
-    hideCallWithOptions();
-    hideAnswerButtons();
-    showVideoAndChat();
+  showHangupButton();
+  hideCallWithOptions();
+  hideAnswerButtons();
+  showVideoAndChat();
 }
 
 function hideWebRTCScreen() {
 
-    hideHangupButton();
+  hideHangupButton();
 
 
-    hideVideoAndChat();
+  hideVideoAndChat();
 }
 
 // UI-Helper-Funktionen
 function showConnectButton() {
-    document.querySelector('#connect').style.display = 'inline-block';
+  document.querySelector('#connect').style.display = 'inline-block';
 }
 
 function hideConnectButton() {
-    document.querySelector('#connect').style.display = 'none';
+  document.querySelector('#connect').style.display = 'none';
 }
 
 function showCallWithOptions() {
-    document.querySelector('#callWithOptions').style.display = 'inline-block';
+  document.querySelector('#callWithOptions').style.display = 'inline-block';
 }
 
 function hideCallWithOptions() {
-    document.querySelector('#callWithOptions').style.display = 'none';
+  document.querySelector('#callWithOptions').style.display = 'none';
 }
 
 function showHangupButton() {
-    document.querySelector('#hangup').style.display = 'inline-block';
+  document.querySelector('#hangup').style.display = 'inline-block';
 }
 
 function hideHangupButton() {
-    document.querySelector('#hangup').style.display = 'none';
+  document.querySelector('#hangup').style.display = 'none';
 }
 
 function showEarlyHangupButton() {
-    document.querySelector('#early-hangup').style.display = 'inline-block';
+  document.querySelector('#early-hangup').style.display = 'inline-block';
 }
 
 function hideEarlyHangupButton() {
-    document.querySelector('#early-hangup').style.display = 'none';
+  document.querySelector('#early-hangup').style.display = 'none';
 }
 
 function showVideoAndChat() {
-console.log('showVideoAndChat');
-    document.querySelector('#main_screen').style.display = 'block';
-    //document.querySelector('#chat').style.display = 'block';
+  console.log('showVideoAndChat');
+  document.querySelector('#main_screen').style.display = 'block';
+  //document.querySelector('#chat').style.display = 'block';
 }
 
 function hideVideoAndChat() {
-console.log('hideVideoAndChat');
-    document.querySelector('#main_screen').style.display = 'none';
-    //document.querySelector('#videos').style.display = 'none';
-    //document.querySelector('#chat').style.display = 'none';
+  console.log('hideVideoAndChat');
+  document.querySelector('#main_screen').style.display = 'none';
+  //document.querySelector('#videos').style.display = 'none';
+  //document.querySelector('#chat').style.display = 'none';
 }
 
 function hideAnswerButtons() {
-    document.querySelector('#answer').innerHTML = '';
+  document.querySelector('#answer').innerHTML = '';
 }
 
 // Funktion zur Aktualisierung der UI basierend auf den Optionen
 function updateUIForOptions(options) {
 
   console.log('updateUIForOptions: options', options);
-    if (options.videoEnabled ) {
-        // Video-Elemente anzeigen
-        document.querySelector('#videos').style.display = 'block';
-    } else {
-        // Video-Elemente ausblenden
-        console.log('updateUIForOptions: Video-Elemente ausblenden');
-        document.querySelector('#videos').style.display = 'none';
+  if (options.videoEnabled) {
+    // Video-Elemente anzeigen
+    document.querySelector('#videos').style.display = 'block';
+  } else {
+    // Video-Elemente ausblenden
+    console.log('updateUIForOptions: Video-Elemente ausblenden');
+    document.querySelector('#videos').style.display = 'none';
 
-    }
+  }
 
-    if (options.chatEnabled) {
-        // Chat-Elemente aktivieren
-        document.querySelector('#chat-input').disabled = false;
-        document.querySelector('#send-button').disabled = false;
-        document.querySelector('#chat').style.display = 'block';
-    } else {
-        // Chat-Elemente deaktivieren
-        document.querySelector('#chat-input').disabled = true;
-        document.querySelector('#send-button').disabled = true;
-        document.querySelector('#chat').style.display = 'none';
-    }
+  if (options.chatEnabled) {
+    // Chat-Elemente aktivieren
+    document.querySelector('#chat-input').disabled = false;
+    document.querySelector('#send-button').disabled = false;
+    document.querySelector('#chat').style.display = 'block';
+  } else {
+    // Chat-Elemente deaktivieren
+    document.querySelector('#chat-input').disabled = true;
+    document.querySelector('#send-button').disabled = true;
+    document.querySelector('#chat').style.display = 'none';
+  }
 }
