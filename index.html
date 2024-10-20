@@ -66,7 +66,7 @@
                 <!-- ein div element, in dem  der Inhalt von chat-input nach jedem key event angezeigt wird -->
 
                 <div class="input-group mb-3">
-                    <input type="text" id="chat-input" class="form-control"  disabled>
+                    <input type="text" id="chat-input" class="form-control" disabled>
                     <button id="send-button" class="btn btn-primary" disabled>Send</button>
                 </div>
 
@@ -75,33 +75,39 @@
 
 
             <div id="chat2" class="container mt-3">
-
-                <div id="chat-input-display"></div>
-
-                <div class="input-group mb-3">
-                    <input type="text" id="chat-input2" class="form-control" disabled>
+                <div id="chat-window">
+                    <div id="display-old"></div>
+                    <div id="display"></div>
 
                 </div>
-
-
-                <!-- Füge hier zwei buttons ein die nebeneinander stehen. Der erste Button heißt "start" und ist grün. Der zweite Button heißt "stop" und ist rot. -->
-                <div class="row">
-                    <button id="record-btn" class="btn btn-success col-auto">Record</button>
-                    <button id="stop-btn" class="btn btn-danger col-auto">Stop</button>
-                    <button id="play-btn" class="btn btn-secondary col-auto">Play</button>
-
-
+                <div id="record-chat-window">
+                    <div id="record-display-old"></div>
+                    <div id="record-display"></div>
                 </div>
+            </div>
 
+            <div class="input-group mb-3">
+                <input type="text" id="chat-input2" class="form-control" disabled>
 
-                <div id="chat-record-display"></div>
             </div>
 
 
+            <!-- Füge hier zwei buttons ein die nebeneinander stehen. Der erste Button heißt "start" und ist grün. Der zweite Button heißt "stop" und ist rot. -->
+            <div class="row">
+                <button id="record-btn" class="btn btn-success col-auto">Record</button>
+                <button id="stop-btn" class="btn btn-danger col-auto">Stop</button>
+                <button id="play-btn" class="btn btn-secondary col-auto">Play</button>
 
 
+            </div>
 
         </div>
+
+
+
+
+
+    </div>
     </div>
     </div>
     <!-- Socket.io einbinden -->

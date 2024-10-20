@@ -55,39 +55,63 @@
     margin-top: 10px;
 
 }
-#chat-input-display, #chat-record-display {
-    position: relative;
-    font-family: monospace;
+
+
+
+/* Container */
+#chat-window, #record-chat-window{
+    display: block; /* Stellt sicher, dass das Eltern-Element als Block angezeigt wird */
+    padding: 0;
+    margin: 0;
+
+    text-align: right;
+}
+
+/* Kindelemente */
+#display,
+#record-display,
+#display-old,
+#record-display-old {
+    display: inline; /* Oder inline-block, je nach Bedarf */
     white-space: pre-wrap;
-    word-wrap: break-word;
-    padding: 5px;
-    min-height: 80px;
-    line-height: 1.2;
-    border:1px solid #ccc;
+    /* Entfernen von zusätzlichen Abständen */
+    margin: 0;
+    padding: 0;
+    border: none; /* Optional: Entfernen, wenn nicht benötigt */
 
-    /* Neue Eigenschaften */
-    direction: rtl;
-    text-align: left;
 
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-    align-items: flex-start;
-    flex-wrap: wrap;
+}
+
+/* Optional: Hervorhebung bestimmter Elemente */
+#display-old,
+#record-display-old {
+    background-color: #ff9999; /* Leicht rötlicher Hintergrund */
+}
+
+#display,
+#record-display {
+    background-color: #6ee56e; /* Leicht grünlicher Hintergrund */
 }
 
 
 
-#chat-input-display span {
+
+
+
+
+
+
+
+#display span {
     display: inline-block;
     direction: ltr;
 }
 
-#chat-input-display .selected {
+#display .selected {
     background-color: #b3d4fc;
 }
 
-#chat-input-display .cursor {
+#display .cursor {
 
     width: 1px;
     height: 1.2em;
@@ -127,4 +151,9 @@
 
 .selected {
     background-color: #b3d4fc;
+}
+
+.old-sentence {
+    background-color: hsl(125, 100%, 88%);
+
 }
