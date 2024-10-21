@@ -1,13 +1,16 @@
 // webrtc.js
 
-// WebRTC-bezogene Funktionen, wie das Erstellen und Verwalten der Peer-Verbindung, Handling von MediaStreams und DataChannels
+import { socket } from './socket.js';
+import { updateUIForOptions, showEarlyHangupButton, showHangupButton, hideCallWithOptions, hideAnswerButtons, hideWaitingScreen, showWebRTCScreen, hideWebRTCScreen, showLandingScreen } from '/js/ui.js';
+import { markMessageAsAcked } from './ui.js';
+import { userName } from './ui.js';
 
 let localStream;
 let remoteStream;
 let peerConnection;
 let didIOffer = false;
-let dataChannelChat;
-let dataChannelSystem;
+export let dataChannelChat;
+export let dataChannelSystem;
 let earlyHangup = false;
 
 const localVideoEl = document.querySelector('#local-video');
@@ -79,23 +82,17 @@ const peerConfiguration = {
             ]
         },
         {
-            urls: 'turn:138.68.104.196:3478', // Deine TURN-Server-Adresse
-            username: 'testuser',             // Dein TURN-Server-Benutzername
-            credential: 'testpass'            // Dein TURN-Server-Passwort
+            urls: 'turn:138.68.104.196:3478',
+            username: 'testuser',
+            credential: 'testpass'
         }
     ]
 };
 
-function initializeWebRTC() {
-    // Initialisierung, falls erforderlich
-}
-
-// Funktion zum Starten eines Anrufs
-async function call(videoEnabled, audioEnabled, chatEnabled) {
+export async function call(videoEnabled, audioEnabled, chatEnabled) {
     await fetchUserMedia(videoEnabled, audioEnabled);
     didIOffer = true;
 
-    // Speichern Sie die ausgewählten Optionen
     const offerOptions = {
         videoEnabled,
         audioEnabled,
@@ -105,27 +102,19 @@ async function call(videoEnabled, audioEnabled, chatEnabled) {
     await createPeerConnection(null, offerOptions);
 
     try {
-        console.log("Erstelle Angebot...");
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
 
-        // Senden Sie das Angebot zusammen mit den Optionen
         socket.emit('newOffer', { offer, offerOptions });
 
-        // UI aktualisieren
         showEarlyHangupButton();
         hideCallWithOptions();
-
-        // UI basierend auf den Optionen aktualisieren
-        // updateUIForOptions(offerOptions);
     } catch (err) {
         console.log(err);
     }
 }
 
-
-async function cancelCall() {
-    console.log("... Angebot zurückgezogen");
+export async function cancelCall() {
     socket.emit('cancelOffer', userName);
     didIOffer = false;
     closeWebRTC();
@@ -134,9 +123,7 @@ async function cancelCall() {
     showLandingScreen();
 }
 
-// Funktion zum Beantworten eines Angebots
-// Funktion zum Beantworten eines Angebots
-async function answerOffer(offerObj) {
+export async function answerOffer(offerObj) {
     const { offer, offerOptions } = offerObj;
 
     await fetchUserMedia(offerOptions.videoEnabled, offerOptions.audioEnabled);
@@ -152,32 +139,26 @@ async function answerOffer(offerObj) {
         peerConnection.addIceCandidate(c);
     });
 
-    // UI aktualisieren
     showHangupButton();
     hideCallWithOptions();
     hideAnswerButtons();
 
-    // UI basierend auf den Optionen aktualisieren
     updateUIForOptions(offerOptions);
 }
 
-// Funktion zum Hinzufügen einer Antwort
-async function addAnswer(offerObj) {
+export async function addAnswer(offerObj) {
     await peerConnection.setRemoteDescription(offerObj.answer);
     if (earlyHangup) {
         console.log("...Angebot zurückgezogen");
     } else {
-        //console.log("ja bereit zu tel");
         showHangupButton();
         hideCallWithOptions();
         hideAnswerButtons();
 
-        // UI basierend auf den Optionen aktualisieren
         updateUIForOptions(offerObj.offerOptions);
     }
 }
 
-// Funktion zum Abrufen des lokalen Medienstreams
 function fetchUserMedia(videoEnabled, audioEnabled) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -197,12 +178,9 @@ function fetchUserMedia(videoEnabled, audioEnabled) {
     });
 }
 
-// Funktion zum Erstellen der Peer-Verbindung
 function createPeerConnection(offerObj = null, options = {}) {
     return new Promise(async (resolve, reject) => {
-
         const { chatEnabled } = options;
-
 
         peerConnection = new RTCPeerConnection(peerConfiguration);
         remoteStream = new MediaStream();
@@ -214,26 +192,20 @@ function createPeerConnection(offerObj = null, options = {}) {
             });
         }
 
-                // DataChannel-Optionen für zuverlässige und geordnete Übertragung
-                const dataChannelOptions = {
-                    ordered: true,       // Daten werden in der Reihenfolge empfangen
-                    maxRetransmits: 10 // Unbegrenzte Wiederholungsversuche für zuverlässige Übertragung
-                };
+        const dataChannelOptions = {
+            ordered: true,
+            maxRetransmits: 10
+        };
 
-
-        // Immer den dataChannelSystem erstellen
         if (didIOffer) {
-            // Wir sind der Anrufer
             dataChannelSystem = peerConnection.createDataChannel('system', dataChannelOptions);
             setupDataChannelSystem(dataChannelSystem);
 
             if (chatEnabled) {
-                // Nur erstellen, wenn Chat aktiviert ist
                 dataChannelChat = peerConnection.createDataChannel('chat', dataChannelOptions);
                 setupDataChannelChat(dataChannelChat);
             }
         } else {
-            // Wir sind der Angenommene
             peerConnection.ondatachannel = event => {
                 if (event.channel.label === 'system') {
                     dataChannelSystem = event.channel;
@@ -245,16 +217,7 @@ function createPeerConnection(offerObj = null, options = {}) {
             };
         }
 
-
-
-        peerConnection.addEventListener("signalingstatechange", (event) => {
-            //console.log(event);
-            //console.log(peerConnection.signalingState);
-        });
-
         peerConnection.addEventListener('icecandidate', e => {
-            //console.log('........ ICE-Kandidat gefunden! ......');
-            //console.log(e);
             if (e.candidate) {
                 socket.emit('sendIceCandidateToSignalingServer', {
                     iceCandidate: e.candidate,
@@ -265,37 +228,21 @@ function createPeerConnection(offerObj = null, options = {}) {
         });
 
         peerConnection.addEventListener('track', e => {
-            // console.log("Empfange Track vom anderen Peer!");
-            // console.log(e);
             e.streams[0].getTracks().forEach(track => {
                 remoteStream.addTrack(track, remoteStream);
-                // console.log("Track erfolgreich hinzugefügt");
             });
         });
 
         peerConnection.addEventListener('connectionstatechange', () => {
-            console.log("........ "+peerConnection.connectionState);
             if (peerConnection.connectionState === 'connected') {
-                console.log('Peers connected!');
-                // Socket-Verbindung schließen
                 socket.disconnect();
-
-
-                // UI aktualisieren
-
                 hideWaitingScreen();
                 showWebRTCScreen();
             }
 
-
             if (peerConnection.connectionState === 'disconnected') {
                 console.log('Peers disconnected!');
-
             }
-
-
-
-
         });
 
         if (offerObj) {
@@ -311,29 +258,19 @@ function setupDataChannelSystem(channel) {
     };
 
     channel.onmessage = (event) => {
-       // console.log('Systemnachricht empfangen:', event.data);
-
-        // Behandlung von Hangup-Nachrichten
         if (event.data === '__hangup__') {
-           // console.log('Remote Peer hat aufgelegt');
-
-           closeWebRTC();
-
+            closeWebRTC();
         }
     };
 
     channel.onclose = () => {
-       // console.log('dataChannelSystem ist geschlossen');
-        //hangup(false);
-
+        console.log('dataChannelSystem ist geschlossen');
     };
 
     channel.onerror = (error) => {
         //console.error('dataChannelSystem Fehler:', error);
     };
 }
-
-// webrtc.js
 
 function setupDataChannelChat(channel) {
     channel.onopen = () => {
@@ -343,31 +280,23 @@ function setupDataChannelChat(channel) {
     };
 
     channel.onmessage = (event) => {
-        console.log('Chatnachricht empfangen:', event.data);
-
         try {
             const messageObj = JSON.parse(event.data);
             if (messageObj.type === 'message') {
-                // Verarbeite die empfangene Nachricht
                 const chatMessages = document.querySelector('#chat-messages');
                 const messageEl = document.createElement('div');
                 messageEl.textContent = 'Remote: ' + messageObj.data;
                 chatMessages.appendChild(messageEl);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
-                // Sende eine ACK-Nachricht zurück
                 const ackObj = {
                     type: 'ack',
                     id: messageObj.id
                 };
                 channel.send(JSON.stringify(ackObj));
             } else if (messageObj.type === 'ack') {
-                // Verarbeite die ACK-Nachricht
                 const ackedMessageId = messageObj.id;
-                // Rufe die UI-Funktion auf, um die Nachricht zu markieren
-
-                    markMessageAsAcked(ackedMessageId);
-
+                markMessageAsAcked(ackedMessageId);
             }
         } catch (error) {
             console.error('Fehler beim Verarbeiten der Chatnachricht:', error);
@@ -375,46 +304,27 @@ function setupDataChannelChat(channel) {
     };
 
     channel.onclose = () => {
-        //console.log('dataChannelChat ist geschlossen');
         document.querySelector('#chat-input').disabled = true;
         document.querySelector('#send-button').disabled = true;
     };
 
     channel.onerror = (error) => {
-        // console.error('dataChannelChat Fehler:', error);
+       // console.error('dataChannelChat Fehler:', error);
     };
 }
 
-
-
-// Funktion zum Hinzufügen eines neuen ICE-Kandidaten
-function addNewIceCandidate(iceCandidate) {
+export function addNewIceCandidate(iceCandidate) {
     peerConnection.addIceCandidate(iceCandidate);
-    // console.log("====== ICE-Kandidat hinzugefügt ======");
 }
 
-// Funktion zum Beenden des Anrufs
-function hangup() {
-   console.log('Beende Anruf');
-
-    // Hangup-Nachricht über dataChannelSystem senden
+export function hangup() {
     if (dataChannelSystem && dataChannelSystem.readyState === 'open') {
-        console.log('Sende Hangup-Nachricht');
         dataChannelSystem.send('__hangup__');
-
-
-
-
     }
     closeWebRTC();
-
-    // UI aktualisieren
-
 }
 
-function closeWebRTC(){
-
-    // DataChannels schließen
+function closeWebRTC() {
     if (dataChannelChat) {
         dataChannelChat.close();
         dataChannelChat = null;
@@ -424,14 +334,11 @@ function closeWebRTC(){
         dataChannelSystem = null;
     }
 
-    // Peer-Verbindung schließen
-    //console.log("........ "+peerConnection.connectionState);
     if (peerConnection) {
         peerConnection.close();
         peerConnection = null;
     }
 
-    // Streams stoppen
     if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
         localStream = null;
@@ -441,25 +348,16 @@ function closeWebRTC(){
         remoteStream = null;
     }
 
-    // UI-Elemente deaktivieren
     document.querySelector('#chat-input').disabled = true;
     document.querySelector('#send-button').disabled = true;
 
-    // Video-Elemente leeren
     localVideoEl.srcObject = null;
     remoteVideoEl.srcObject = null;
 
-    // Chat-Nachrichten löschen
     document.querySelector('#chat-messages').innerHTML = '';
 
-    // Zustand zurücksetzen
     didIOffer = false;
-
-    console.log('closeWebRTC()');
 
     hideWebRTCScreen();
     showLandingScreen();
-
-
-
 }

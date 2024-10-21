@@ -1,10 +1,11 @@
 // socket.js
 
-// Socket.io-Logik, einschließlich Verbindung zum Signalisierungsserver und Behandlung von Socket-Ereignissen
+import { createOfferEls, hideWaitingScreen, showWaitingScreen, hideLandingScreen, showLandingScreen } from './ui.js';
+import { addAnswer, addNewIceCandidate } from './webrtc.js';
 
-let socket;
+export let socket;
 
-async function initializeS() {
+export async function initializeS(userName, password) {
     try {
         // Socket-Verbindung herstellen
         await initializeSocket(userName, password);
@@ -17,28 +18,23 @@ async function initializeS() {
 }
 
 function initializeSocket(userName, password) {
-    // Verbindung zum Signalisierungsserver herstellen
-
     socket = io({
         auth: {
             userName, password
         },
-        secure: true, // Falls HTTPS verwendet wird
+        secure: true,
         transports: ['websocket', 'polling']
     });
 
-    // Socket-Ereignisse einrichten
     setupSocketEvents();
     console.log("socket initialized");
 }
 
 function setupSocketEvents() {
-    // Bei Verbindung verfügbare Angebote abrufen
     socket.on('availableOffers', offers => {
         createOfferEls(offers);
     });
 
-    // Neues Angebot erhalten
     socket.on('newOfferAwaiting', offers => {
         if (offers.length > 0) {
             createOfferEls(offers);
@@ -50,7 +46,6 @@ function setupSocketEvents() {
         }
     });
 
-    // Antwort auf Angebot erhalten
     socket.on('answerResponse', offerObj => {
         if (offerObj.answer) {
             addAnswer(offerObj);
@@ -59,23 +54,15 @@ function setupSocketEvents() {
         }
     });
 
-    // ICE-Kandidat vom Server erhalten
     socket.on('receivedIceCandidateFromServer', iceCandidate => {
         addNewIceCandidate(iceCandidate);
     });
 
     socket.on('disconnect', (reason) => {
         console.log('socket.disconnect()');
-        if (reason === 'io server disconnect') {
-            // Der Server hat die Verbindung getrennt
-        } else {
-            // Die Verbindung wurde aus einem anderen Grund getrennt
-        }
     });
 
     socket.on('connect', () => {
         // Verbindung zum Server hergestellt
     });
 }
-
-// Exportiere socket, falls in anderen Modulen benötigt
