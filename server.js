@@ -12,6 +12,9 @@ app.use(express.static(__dirname));
 let connectedSockets = [];
 let offers = [];
 
+let debug_first_user = true
+let debug = true;
+
 try {
     // Schlüssel und Zertifikat für HTTPS
     const key = fs.readFileSync(process.env.KEY_PATH);
@@ -63,6 +66,7 @@ try {
         }
 
         socket.on('newOffer', newOfferObj => {
+
             const { offer, offerOptions } = newOfferObj;
             const newOfferEntry = {
                 offererUserName: userName,
@@ -73,9 +77,46 @@ try {
                 answer: null,
                 answererIceCandidates: []
             };
-            offers.push(newOfferEntry);
-            // Angebot an alle anderen Clients senden
-            socket.broadcast.emit('newOfferAwaiting', [newOfferEntry]);
+
+
+
+
+
+
+
+            if (debug) {
+                console.log("debug mode");
+
+                if (debug_first_user) {
+
+                    offers.push(newOfferEntry);
+                    socket.broadcast.emit('newOfferAwaiting', [newOfferEntry]);
+
+
+                    debug_first_user = false;
+                    /// return;
+                } else {
+
+                    debug_first_user = true;
+                }
+
+            } else {
+
+                offers.push(newOfferEntry);
+                socket.broadcast.emit('newOfferAwaiting', [newOfferEntry]);
+
+
+
+            }
+
+
+
+
+
+
+
+
+
         });
 
         socket.on('cancelOffer', userName => {

@@ -7,7 +7,7 @@ import { showAnswerButton, hideWaitingScreen } from '../screens/waiting/waiting_
 import { showLandingScreen, hideLandingScreen } from '../screens/landing/landing_ui.js';
 import { showCallScreen, hideCallScreen } from '../screens/call/call_ui.js';
 
-
+import { debug } from '../app.js';
 
 export let socket;
 
@@ -71,10 +71,10 @@ export async function initSocket() {
 
 
 
-
-        hideLandingScreen();
-        showCallScreen();
-
+        if (!debug) {
+            hideLandingScreen();
+            showCallScreen();
+        }
 
 
     } catch (err) {

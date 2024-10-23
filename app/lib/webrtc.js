@@ -8,10 +8,11 @@ import { showHangupButton, updateUIForOptions } from '../screens/web_rtc/web_rtc
 import { showLandingScreen } from '../screens/landing/landing_ui.js';
 import { showWebRTCScreen, hideWebRTCScreen } from '../screens/web_rtc/web_rtc_ui.js';
 import { markMessageAsAcked } from '../screens/web_rtc/normal/normal_ui.js';
+import { peerConfiguration } from './peer_configuration.js';
 
 
-import { LucisSession } from '../screens/web_rtc/lucis/lucis_model.js';
-import { setSession, service } from '../screens/web_rtc/lucis/lucis_session.js';
+import { createSession } from '../screens/web_rtc/lucis/lucis_session.js';
+
 
 
 let localStream;
@@ -25,78 +26,7 @@ let earlyHangup = false;
 const localVideoEl = document.querySelector('#local-video');
 const remoteVideoEl = document.querySelector('#remote-video');
 
-const peerConfiguration = {
-    iceServers: [
-        {
-            urls: [
-                "stun:stun.l.google.com:19302",
-                "stun:stun.l.google.com:5349",
-                "stun:stun1.l.google.com:3478",
-                "stun:stun1.l.google.com:5349",
-                "stun:stun2.l.google.com:19302",
-                "stun:stun2.l.google.com:5349",
-                "stun:stun3.l.google.com:3478",
-                "stun:stun3.l.google.com:5349",
-                "stun:stun4.l.google.com:19302",
-                "stun:stun4.l.google.com:5349",
-                "stun:stun.1und1.de:3478",
-                "stun:stun.gmx.net:3478",
-                "stun:stun1.l.google.com:19302",
-                "stun:stun2.l.google.com:19302",
-                "stun:stun3.l.google.com:19302",
-                "stun:stun4.l.google.com:19302",
-                "stun:23.21.150.121:3478",
-                "stun:iphone-stun.strato-iphone.de:3478",
-                "stun:numb.viagenie.ca:3478",
-                "stun:stun.12connect.com:3478",
-                "stun:stun.12voip.com:3478",
-                "stun:stun.1und1.de:3478",
-                "stun:stun.2talk.co.nz:3478",
-                "stun:stun.2talk.com:3478",
-                "stun:stun.3clogic.com:3478",
-                "stun:stun.3cx.com:3478",
-                "stun:stun.a-mm.tv:3478",
-                "stun:stun.aa.net.uk:3478",
-                "stun:stun.acrobits.cz:3478",
-                "stun:stun.actionvoip.com:3478",
-                "stun:stun.advfn.com:3478",
-                "stun:stun.aeta-audio.com:3478",
-                "stun:stun.aeta.com:3478",
-                "stun:stun.altar.com.pl:3478",
-                "stun:stun.annatel.net:3478",
-                "stun:stun.antisip.com:3478",
-                "stun:stun.arbuz.ru:3478",
-                "stun:stun.avigora.fr:3478",
-                "stun:stun.awa-shima.com:3478",
-                "stun:stun.b2b2c.ca:3478",
-                "stun:stun.bahnhof.net:3478",
-                "stun:stun.barracuda.com:3478",
-                "stun:stun.bluesip.net:3478",
-                "stun:stun.bmwgs.cz:3478",
-                "stun:stun.botonakis.com:3478",
-                "stun:stun.budgetsip.com:3478",
-                "stun:stun.cablenet-as.net:3478",
-                "stun:stun.callromania.ro:3478",
-                "stun:stun.callwithus.com:3478",
-                "stun:stun.chathelp.ru:3478",
-                "stun:stun.cheapvoip.com:3478",
-                "stun:stun.ciktel.com:3478",
-                "stun:stun.cloopen.com:3478",
-                "stun:stun.comfi.com:3478",
-                "stun:stun.commpeak.com:3478",
-                "stun:stun.comtube.com:3478",
-                "stun:stun.comtube.ru:3478",
-                "stun:stun.cope.es:3478",
-                "stun:stun.counterpath.com:3478"
-            ]
-        },
-        {
-            urls: 'turn:138.68.104.196:3478',
-            username: 'testuser',
-            credential: 'testpass'
-        }
-    ]
-};
+
 
 export async function call(videoEnabled, audioEnabled, chatEnabled) {
     await fetchUserMedia(videoEnabled, audioEnabled);
@@ -194,7 +124,7 @@ function fetchUserMedia(videoEnabled, audioEnabled) {
 
 function createPeerConnection(offerObj = null, options = {}) {
 
-    console.log('hallo');
+   // console.log('hallo');
     return new Promise(async (resolve, reject) => {
         const { chatEnabled } = options;
 
@@ -272,10 +202,10 @@ function createPeerConnection(offerObj = null, options = {}) {
 
 function setupDataChannelSystem(channel) {
     channel.onopen = () => {
-        const lucisSession = new LucisSession();
-        setSession(lucisSession);
-        service();
-        console.log('dataChannelSystem ist offen');
+
+        createSession();
+
+       // console.log('dataChannelSystem ist offen');
     };
 
     channel.onmessage = (event) => {
@@ -296,7 +226,7 @@ function setupDataChannelSystem(channel) {
 
 function setupDataChannelChat(channel) {
     channel.onopen = () => {
-        console.log('dataChannelChat ist offen');
+       // console.log('dataChannelChat ist offen');
         document.querySelector('#chat-input').disabled = false;
         document.querySelector('#send-button').disabled = false;
     };

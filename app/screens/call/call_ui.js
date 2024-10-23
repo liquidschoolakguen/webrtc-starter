@@ -4,24 +4,25 @@ import { call } from '../../lib/webrtc.js';
 
 
 
+
 export function initCallScreen() {
 
   const callButton = document.querySelector('#call');
 
 
 
-  callButton.addEventListener('click', () => {
+  callButton.addEventListener('click', async () => {
 
     const videoEnabled = document.querySelector('#videoCheck').checked;
     const audioEnabled = document.querySelector('#audioCheck').checked;
     const chatEnabled = document.querySelector('#chatCheck').checked;
 
-   call(videoEnabled, audioEnabled, chatEnabled);
+    await call(videoEnabled, audioEnabled, chatEnabled);
 
   });
 
 
-  //showCallScreen();
+
 
 }
 

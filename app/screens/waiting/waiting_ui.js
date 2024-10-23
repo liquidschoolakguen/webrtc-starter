@@ -1,5 +1,5 @@
 import { cancelCall , answerOffer} from '../../lib/webrtc.js';
-
+import { debug } from '../../app.js';
 
 
 
@@ -66,11 +66,12 @@ export function hideAnswerButton() {
 
 
 export function showAnswerButton(offers) {
+  let newOfferEl;
   // Antwortbereich leeren
   const answerEl = document.querySelector('#answer');
   answerEl.innerHTML = '';
   offers.forEach(o => {
-    const newOfferEl = document.createElement('button');
+    newOfferEl = document.createElement('button');
     newOfferEl.className = 'btn btn-success';
 
     // Optionen extrahieren
@@ -82,10 +83,19 @@ export function showAnswerButton(offers) {
     }
 
     newOfferEl.textContent = `Annehmen von ${o.offererUserName} (${optionsText.trim()})`;
-    newOfferEl.addEventListener('click', () => answerOffer(o));
+    newOfferEl.addEventListener('click', async () => await answerOffer(o));
     answerEl.appendChild(newOfferEl);
 
     // UI aktualisieren
 
+    if (debug) {
+      newOfferEl.click();
+    }
+
+
   });
+
+
+
+
 }

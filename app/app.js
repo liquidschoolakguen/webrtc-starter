@@ -7,10 +7,15 @@ import { initWebRTCScreen } from './screens/web_rtc/web_rtc_ui.js';
 import { initNormalScreen } from './screens/web_rtc/normal/normal_ui.js';
 import { initializeLucisScreen } from './screens/web_rtc/lucis/lucis_ui.js';
 
+
+//for debug
+import { initSocket } from './lib/socket.js';
+import { call } from './lib/webrtc.js';
+
 export let userName;
 export let password;
 
-
+export const debug = true;
 
  function initializeApp() {
 
@@ -27,9 +32,17 @@ export let password;
   initWebRTCScreen();
   initializeLucisScreen();
 
-
-  showLandingScreen();
   console.log('App initialized');
+
+  if (debug) {
+    initSocket();
+    call(false, false, true);
+  }else{
+    showLandingScreen();
+  }
+
+
+
 }
 
 initializeApp();

@@ -1,7 +1,7 @@
 
 
 import { initSocket } from '../../lib/socket.js';
-import { initCallScreen } from '../call/call_ui.js';
+
 
 
 
@@ -11,10 +11,7 @@ export function initLandingScreen() {
 
   document.querySelector('#connect').addEventListener('click', async () => {
     try {
-     await initSocket();
-
-
-
+      await initSocket();
 
     } catch (err) {
       console.error(err);
@@ -22,16 +19,10 @@ export function initLandingScreen() {
   });
 
 
-
-
-  //showLandingScreen();
-
-
-
 }
 
 export function showLandingScreen() {
-    showConnectButton();
+  showConnectButton();
 }
 
 
@@ -41,10 +32,10 @@ export function hideLandingScreen() {
 }
 
 
- function showConnectButton() {
+function showConnectButton() {
   document.querySelector('#connect').style.display = 'inline-block';
 }
 
- function hideConnectButton() {
+function hideConnectButton() {
   document.querySelector('#connect').style.display = 'none';
 }

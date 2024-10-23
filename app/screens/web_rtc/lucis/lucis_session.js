@@ -1,11 +1,12 @@
+import { LucisSession } from './lucis_model.js';
 
-import { Cycle } from './lucis_model.js';
 
 
 let _session;
 
-export function setSession(newSession) {
-  _session = newSession;
+export function createSession() {
+  _session = new LucisSession();
+  console.log('lucis session created');
 }
 
 export function getSession() {
@@ -16,7 +17,7 @@ export function service() {
 
 
 
-  console.log(_session);
+  //console.log(_session);
 
 
   // Weitere Logik hier...
@@ -46,6 +47,7 @@ export function startRecording() {
 }
 
 export function stopRecording() {
+  console.log('stopRecording');
   document.querySelector('#chat-input2').disabled = true;
   const displayElement = document.querySelector('#display');
   const displayElementOld = document.querySelector('#display-old');
@@ -58,6 +60,7 @@ export function stopRecording() {
 
   _session.current_cycle.final_state.ui.displayElInnerHtml = displayElement.innerHTML;
   _session.current_cycle.final_state.ui.displayElOldInnerHtml = displayElementOld.innerHTML;
+
   console.log(_session);
 
 
