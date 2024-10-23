@@ -4,9 +4,14 @@ import { socket } from './socket.js';
 import { userName } from '../app.js';
 import { showEarlyHangupButton, hideWaitingScreen, hideAnswerButton, initWaitingScreen } from '../screens/waiting/waiting_ui.js';
 import { hideCallScreen } from '../screens/call/call_ui.js';
-import { showHangupButton, updateUIForOptions } from '../screens/web_rtc/lucis/lucis_ui.js';
+import { showHangupButton, updateUIForOptions } from '../screens/web_rtc/web_rtc_ui.js';
 import { showLandingScreen } from '../screens/landing/landing_ui.js';
-import { showWebRTCScreen, hideWebRTCScreen } from '../screens/web_rtc/lucis/lucis_ui.js';
+import { showWebRTCScreen, hideWebRTCScreen } from '../screens/web_rtc/web_rtc_ui.js';
+import { markMessageAsAcked } from '../screens/web_rtc/normal/normal_ui.js';
+
+
+import { LucisSession } from '../screens/web_rtc/lucis/lucis_model.js';
+import { setSession, service } from '../screens/web_rtc/lucis/lucis_session.js';
 
 
 let localStream;
@@ -267,6 +272,9 @@ function createPeerConnection(offerObj = null, options = {}) {
 
 function setupDataChannelSystem(channel) {
     channel.onopen = () => {
+        const lucisSession = new LucisSession();
+        setSession(lucisSession);
+        service();
         console.log('dataChannelSystem ist offen');
     };
 

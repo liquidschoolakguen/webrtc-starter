@@ -1,79 +1,38 @@
-// ui_lucis.js
-
-import { hideAnswerButton } from  '../../waiting/waiting_ui.js';
-import { hangup } from '../../../lib/webrtc.js';
 
 
-export function initWebRTCScreen() {
+import { startRecording, stopRecording } from './lucis_session.js';
+import { checkChanges } from './lucis_cycle.js';
 
-  document.querySelector('#hangup').addEventListener('click', hangup);
+export const inputElement = document.querySelector('#chat-input2');
+
+export const displayElement = document.querySelector('#display');
+export const displayElementOld = document.querySelector('#display-old');
+
+export const recordDisplayElement = document.querySelector('#record-display');
+export const recordDisplayElementOld = document.querySelector('#record-display-old');
+
+export function initializeLucisScreen() {
+
+
+
+
+
+
+  document.querySelector('#record-btn').addEventListener('click', startRecording);
+  document.querySelector('#stop-btn').addEventListener('click', stopRecording);
+  //document.querySelector('#play-btn').addEventListener('click', playRecord);
+
+  inputElement.addEventListener('input', checkChanges);
+  inputElement.addEventListener('click', checkChanges);
+  inputElement.addEventListener('keyup', checkChanges);
+  inputElement.addEventListener('select', checkChanges);
+
+
 
 
 }
 
 
-export function showHangupButton() {
-  document.querySelector('#hangup').style.display = 'inline-block';
+function showLucisScreen() {
 
-
-}
-
-export function hideHangupButton() {
-  document.querySelector('#hangup').style.display = 'none';
-}
-
-
-
-export function showVideoAndChat() {
-  document.querySelector('#main_screen').style.display = 'block';
-}
-
-
-export function hideVideoAndChat() {
-  document.querySelector('#main_screen').style.display = 'none';
-}
-
-
-export function showWebRTCScreen() {
-  showHangupButton();
-
-  hideAnswerButton();
-  showVideoAndChat();
-
-}
-
-export function hideWebRTCScreen() {
-  hideHangupButton();
-  hideVideoAndChat();
-
-}
-
-
-
-
-
-
-
-
-export function updateUIForOptions(options) {
-  console.log(options);
-  if (options.videoEnabled) {
-    document.querySelector('#videos').style.display = 'block';
-  } else {
-    document.querySelector('#videos').style.display = 'none';
-  }
-
-  if (options.chatEnabled) {
-    document.querySelector('#chat-input').disabled = false;
-    document.querySelector('#send-button').disabled = false;
-    document.querySelector('#chat').style.display = 'block';
-  } else {
-    document.querySelector('#chat-input').disabled = true;
-    document.querySelector('#send-button').disabled = true;
-    document.querySelector('#chat').style.display = 'none';
-  }
-}
-
-function generateUniqueId() {
-  return 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
 }
