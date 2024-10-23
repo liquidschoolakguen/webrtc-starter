@@ -20,7 +20,7 @@
 <body>
     <div class="container">
         <div class="row mb-3 mt-3 justify-content-md-center">
-            <button id="connect" class="btn btn-primary col-auto">Hallo Jana</button>
+            <button id="connect" class="btn btn-primary col-auto">Connect</button>
 
             <div id="callWithOptions" class="col-auto">
                 <button id="call" class="btn btn-success col-auto">Call</button>
@@ -101,6 +101,14 @@
 
             </div>
 
+            <div class="row">
+                <button id="del-record-btn" class="btn btn-success col-auto">Delete Record</button>
+                <button id="stop-btn" class="btn btn-danger col-auto">Stop</button>
+                <button id="play-btn" class="btn btn-secondary col-auto">Play</button>
+
+
+            </div>
+
         </div>
 
 
@@ -113,7 +121,7 @@
     <!-- Socket.io einbinden -->
     <script src="/socket.io/socket.io.js"></script>
     <!-- Eigene Skripte einbinden -->
-    <script type="module" src='js/main.js'></script>
+    <script type="module" src='app/app.js'></script>
 </body>
 
 </html>

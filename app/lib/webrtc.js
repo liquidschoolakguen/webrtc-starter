@@ -1,9 +1,13 @@
 // webrtc.js
 
 import { socket } from './socket.js';
-import { updateUIForOptions, showEarlyHangupButton, showHangupButton, hideCallWithOptions, hideAnswerButtons, hideWaitingScreen, showWebRTCScreen, hideWebRTCScreen, showLandingScreen } from '/js/ui.js';
-import { markMessageAsAcked } from './ui.js';
-import { userName } from './ui.js';
+import { userName } from '../app.js';
+import { showEarlyHangupButton, hideWaitingScreen, hideAnswerButton, initWaitingScreen } from '../screens/waiting/waiting_ui.js';
+import { hideCallScreen } from '../screens/call/call_ui.js';
+import { showHangupButton, updateUIForOptions } from '../screens/web_rtc/lucis/lucis_ui.js';
+import { showLandingScreen } from '../screens/landing/landing_ui.js';
+import { showWebRTCScreen, hideWebRTCScreen } from '../screens/web_rtc/lucis/lucis_ui.js';
+
 
 let localStream;
 let remoteStream;
@@ -99,7 +103,7 @@ export async function call(videoEnabled, audioEnabled, chatEnabled) {
         chatEnabled
     };
 
-    await createPeerConnection(null, offerOptions);
+   await createPeerConnection(null, offerOptions);
 
     try {
         const offer = await peerConnection.createOffer();
@@ -107,10 +111,15 @@ export async function call(videoEnabled, audioEnabled, chatEnabled) {
 
         socket.emit('newOffer', { offer, offerOptions });
 
+        initWaitingScreen();
+
         showEarlyHangupButton();
-        hideCallWithOptions();
+        hideCallScreen();
+
     } catch (err) {
         console.log(err);
+
+
     }
 }
 
@@ -128,7 +137,7 @@ export async function answerOffer(offerObj) {
 
     await fetchUserMedia(offerOptions.videoEnabled, offerOptions.audioEnabled);
     didIOffer = false;
-    await createPeerConnection(offerObj, offerOptions);
+    await createPeerConnection(offerObj, offerOptions, userName);
 
     const answer = await peerConnection.createAnswer({});
     await peerConnection.setLocalDescription(answer);
@@ -140,8 +149,8 @@ export async function answerOffer(offerObj) {
     });
 
     showHangupButton();
-    hideCallWithOptions();
-    hideAnswerButtons();
+    hideCallScreen();
+    hideAnswerButton();
 
     updateUIForOptions(offerOptions);
 }
@@ -152,8 +161,8 @@ export async function addAnswer(offerObj) {
         console.log("...Angebot zurückgezogen");
     } else {
         showHangupButton();
-        hideCallWithOptions();
-        hideAnswerButtons();
+        hideCallScreen();
+        hideAnswerButton();
 
         updateUIForOptions(offerObj.offerOptions);
     }
@@ -179,8 +188,11 @@ function fetchUserMedia(videoEnabled, audioEnabled) {
 }
 
 function createPeerConnection(offerObj = null, options = {}) {
+
+    console.log('hallo');
     return new Promise(async (resolve, reject) => {
         const { chatEnabled } = options;
+
 
         peerConnection = new RTCPeerConnection(peerConfiguration);
         remoteStream = new MediaStream();
@@ -241,6 +253,7 @@ function createPeerConnection(offerObj = null, options = {}) {
             }
 
             if (peerConnection.connectionState === 'disconnected') {
+
                 console.log('Peers disconnected!');
             }
         });
@@ -264,6 +277,7 @@ function setupDataChannelSystem(channel) {
     };
 
     channel.onclose = () => {
+        closeWebRTC();
         console.log('dataChannelSystem ist geschlossen');
     };
 
@@ -324,7 +338,14 @@ export function hangup() {
     closeWebRTC();
 }
 
-function closeWebRTC() {
+export async function closeWebRTC() {
+
+
+    location.reload(true);
+}
+
+
+export async function closeWebRTC2() {
     if (dataChannelChat) {
         dataChannelChat.close();
         dataChannelChat = null;
@@ -335,7 +356,14 @@ function closeWebRTC() {
     }
 
     if (peerConnection) {
-        peerConnection.close();
+        try {
+            peerConnection.setLocalDescription(null);
+            peerConnection.close();
+        } catch (error) {
+            console.error('Fehler beim Schließen der Peerverbindung:', error);
+        }
+
+
         peerConnection = null;
     }
 
@@ -358,6 +386,5 @@ function closeWebRTC() {
 
     didIOffer = false;
 
-    hideWebRTCScreen();
-    showLandingScreen();
+    location.reload(true);
 }

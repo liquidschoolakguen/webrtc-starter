@@ -1,3 +1,7 @@
+
+
+
+
 #videos {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -79,6 +83,9 @@
     padding: 0;
     border: none; /* Optional: Entfernen, wenn nicht benötigt */
 
+    word-break: break-word;
+    overflow-wrap: break-word;
+
 
 }
 
@@ -98,26 +105,14 @@
 
 
 
+span {
+    margin-right: 0em; /* Horizontaler Abstand */
+  }
 
 
 
 
-#display span {
-    display: inline-block;
-    direction: ltr;
-}
 
-#display .selected {
-    background-color: #b3d4fc;
-}
-
-#display .cursor {
-
-    width: 1px;
-    height: 1.2em;
-    background-color: #000;
-    animation: blink 0.7s infinite;
-}
 
 @keyframes blink {
     0% { opacity: 0; }
@@ -147,6 +142,7 @@
     height: 1.2em;
     background-color: #000;
     animation: blink 0.7s infinite;
+
 }
 
 .selected {
