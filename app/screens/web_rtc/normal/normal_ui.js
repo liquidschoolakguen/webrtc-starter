@@ -1,4 +1,4 @@
-import { dataChannelChat } from '../../../lib/webrtc.js';
+import { dataChannelChat } from '../../../lib/webrtc/create.js';
 
 
 
@@ -45,7 +45,7 @@ function sendMessage() {
 
 const sentMessages = {};
 
-export function markMessageAsAcked(messageId) {
+export function markChatMessageAsAcked(messageId) {
   const messageEl = sentMessages[messageId];
   if (messageEl) {
     messageEl.style.color = 'red';

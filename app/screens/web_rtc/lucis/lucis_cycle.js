@@ -1,20 +1,172 @@
 
+import { _s } from './lucis_session.js';
+
 
 
 
 
 export function checkChanges() {
-  inputTextValue = inputElement.value;
-  inputCursorStart = inputElement.selectionStart;
-  inputCursorEnd = inputElement.selectionEnd;
+  const inputTextValue = document.querySelector('#chat-input2').value;
+  const inputCursorStart = document.querySelector('#chat-input2').selectionStart;
+  const inputCursorEnd = document.querySelector('#chat-input2').selectionEnd;
+
+
+  const lastInputTextValue = _s.cycle.data.inputValue;
+  const lastInputCursorStart = _s.cycle.data.inputCS;
+  const lastInputCursorEnd = _s.cycle.data.inputCE;
+
+
 
   if (inputTextValue !== lastInputTextValue || inputCursorStart !== lastInputCursorStart || inputCursorEnd !== lastInputCursorEnd) {
 
-    //fire(inputTextValue, inputCursorStart, inputCursorEnd);
-    console.log(inputTextValue, inputCursorStart, inputCursorEnd);
+    _s.cycle.data.setInputs(inputTextValue, inputCursorStart, inputCursorEnd);
+    _s.cycle.data.createNewManipulation();
+
+    const manipulation = _s.cycle.data.manipulation;
+    console.log(manipulation);
+
+    _s.cycle.data.createConstruction();
+
+
+    //displayManipulation(manipulation);
+
+    _s.cycle.data.lastInputValue = inputTextValue;
+   // console.log('CC inputTextValue: ' + inputTextValue);
+   // console.log('CC lastInputValue: ' + _s.cycle.data.lastInputValue);
+
 
   }
 }
+
+
+
+
+
+function displayManipulation(manipulation) {
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function checkChangesXX() {
+  const inputElement = document.getElementById('input-element');
+  const coloredText = document.getElementById('colored-text');
+  const value = inputElement.value;
+
+  let coloredValue = '';
+  for (let i = 0; i < value.length; i++) {
+      if (i < 30) {
+          coloredValue += `<span style="color: green;">${value[i]}</span>`;
+      } else {
+          coloredValue += `<span style="color: red;">${value[i]}</span>`;
+      }
+  }
+
+  coloredText.innerHTML = coloredValue;
+}
+
+
+
+let lastInputTextValue3 = '';
+let lastInputCursorStart3 = 0;
+let lastInputCursorEnd3 = 0;
+
+export function checkChanges3() {
+  console.log("checkChanges3");
+  const inputTextValue = document.querySelector('#chat-input3').value;
+  const inputCursorStart = document.querySelector('#chat-input3').selectionStart;
+  const inputCursorEnd = document.querySelector('#chat-input3').selectionEnd;
+
+  if (inputTextValue !== lastInputTextValue3 || inputCursorStart !== lastInputCursorStart3 || inputCursorEnd !== lastInputCursorEnd3) {
+
+    console.log(inputTextValue, inputCursorStart, inputCursorEnd, "last: ", lastInputTextValue3 );
+    changeColor();
+
+    lastInputTextValue3 = inputTextValue;
+    lastInputCursorStart3 = inputCursorStart;
+    lastInputCursorEnd3 = inputCursorEnd;
+  }
+
+}
+
+
+
+export function focusInput() {
+  console.log("focusInput");
+  const inputElement = document.getElementById('chat-input3');
+  inputElement.focus();
+}
+
+
+
+
+
+
+
+export function changeColor() {
+  const inputElement = document.getElementById('chat-input3');
+  const coloredText = document.getElementById('colored-text');
+  const value = inputElement.value;
+  const cursorPosition = inputElement.selectionStart;
+  console.log("changeColor", value, cursorPosition);
+
+  let coloredValue = '';
+  for (let i = 0; i < value.length; i++) {
+      if (i < 30) {
+          coloredValue += `<span style="color: green;">${value[i]}</span>`;
+      } else {
+          coloredValue += `<span style="color: red;">${value[i]}</span>`;
+      }
+      if (i === cursorPosition - 1) {
+          coloredValue += '<span class="cursor"></span>';
+      }
+  }
+
+  if (cursorPosition === value.length) {
+      coloredValue += '<span class="cursor"></span>';
+  }
+
+  coloredText.innerHTML = coloredValue;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

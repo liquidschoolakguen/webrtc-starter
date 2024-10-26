@@ -1,27 +1,29 @@
 // webrtc.js
 
-import { socket } from './socket.js';
-import { userName } from '../app.js';
-import { showEarlyHangupButton, hideWaitingScreen, hideAnswerButton, initWaitingScreen } from '../screens/waiting/waiting_ui.js';
-import { hideCallScreen } from '../screens/call/call_ui.js';
-import { showHangupButton, updateUIForOptions } from '../screens/web_rtc/web_rtc_ui.js';
-import { showLandingScreen } from '../screens/landing/landing_ui.js';
-import { showWebRTCScreen, hideWebRTCScreen } from '../screens/web_rtc/web_rtc_ui.js';
-import { markMessageAsAcked } from '../screens/web_rtc/normal/normal_ui.js';
+import { socket } from '../socket.js';
+import { _app  } from '../../app.js';
+import { showEarlyHangupButton, hideWaitingScreen, hideAnswerButton, initWaitingScreen } from '../../screens/waiting/waiting_ui.js';
+import { hideCallScreen } from '../../screens/call/call_ui.js';
+import { showHangupButton, updateUIForOptions } from '../../screens/web_rtc/web_rtc_ui.js';
+import { showLandingScreen } from '../../screens/landing/landing_ui.js';
+import { showWebRTCScreen } from '../../screens/web_rtc/web_rtc_ui.js';
 import { peerConfiguration } from './peer_configuration.js';
+import { setupDataChannelSystem } from './data_cannels/system.js';
+import { setupDataChannelChat } from './data_cannels/chat.js';
+import { setupDataChannelLucis } from './data_cannels/lucis.js';
 
 
-import { createSession } from '../screens/web_rtc/lucis/lucis_session.js';
 
 
 
-let localStream;
-let remoteStream;
-let peerConnection;
-let didIOffer = false;
+ let localStream;
+ let remoteStream;
+ let peerConnection;
+export let didIOffer = false;
 export let dataChannelChat;
 export let dataChannelSystem;
-let earlyHangup = false;
+export let dataChannelLucis;
+ let earlyHangup = false;
 
 const localVideoEl = document.querySelector('#local-video');
 const remoteVideoEl = document.querySelector('#remote-video');
@@ -29,6 +31,9 @@ const remoteVideoEl = document.querySelector('#remote-video');
 
 
 export async function call(videoEnabled, audioEnabled, chatEnabled) {
+
+
+
     await fetchUserMedia(videoEnabled, audioEnabled);
     didIOffer = true;
 
@@ -59,9 +64,9 @@ export async function call(videoEnabled, audioEnabled, chatEnabled) {
 }
 
 export async function cancelCall() {
-    socket.emit('cancelOffer', userName);
+    socket.emit('cancelOffer', _app.meUser.userName);
     didIOffer = false;
-    closeWebRTC();
+    await closeWebRTC();
     socket.disconnect();
     hideWaitingScreen();
     showLandingScreen();
@@ -72,7 +77,7 @@ export async function answerOffer(offerObj) {
 
     await fetchUserMedia(offerOptions.videoEnabled, offerOptions.audioEnabled);
     didIOffer = false;
-    await createPeerConnection(offerObj, offerOptions, userName);
+    await createPeerConnection(offerObj, offerOptions, _app.meUser.userName);
 
     const answer = await peerConnection.createAnswer({});
     await peerConnection.setLocalDescription(answer);
@@ -152,6 +157,11 @@ function createPeerConnection(offerObj = null, options = {}) {
                 dataChannelChat = peerConnection.createDataChannel('chat', dataChannelOptions);
                 setupDataChannelChat(dataChannelChat);
             }
+
+            if (chatEnabled) {
+                dataChannelLucis = peerConnection.createDataChannel('lucis', dataChannelOptions);
+                setupDataChannelLucis(dataChannelLucis);
+            }
         } else {
             peerConnection.ondatachannel = event => {
                 if (event.channel.label === 'system') {
@@ -160,6 +170,9 @@ function createPeerConnection(offerObj = null, options = {}) {
                 } else if (event.channel.label === 'chat') {
                     dataChannelChat = event.channel;
                     setupDataChannelChat(dataChannelChat);
+                } else if (event.channel.label === 'lucis') {
+                    dataChannelLucis = event.channel;
+                    setupDataChannelLucis(dataChannelLucis);
                 }
             };
         }
@@ -168,7 +181,7 @@ function createPeerConnection(offerObj = null, options = {}) {
             if (e.candidate) {
                 socket.emit('sendIceCandidateToSignalingServer', {
                     iceCandidate: e.candidate,
-                    iceUserName: userName,
+                    iceUserName: _app.meUser.userName,
                     didIOffer,
                 });
             }
@@ -200,129 +213,78 @@ function createPeerConnection(offerObj = null, options = {}) {
     });
 }
 
-function setupDataChannelSystem(channel) {
-    channel.onopen = () => {
 
-        createSession();
 
-       // console.log('dataChannelSystem ist offen');
-    };
-
-    channel.onmessage = (event) => {
-        if (event.data === '__hangup__') {
-            closeWebRTC();
-        }
-    };
-
-    channel.onclose = () => {
-        closeWebRTC();
-        console.log('dataChannelSystem ist geschlossen');
-    };
-
-    channel.onerror = (error) => {
-        //console.error('dataChannelSystem Fehler:', error);
-    };
-}
-
-function setupDataChannelChat(channel) {
-    channel.onopen = () => {
-       // console.log('dataChannelChat ist offen');
-        document.querySelector('#chat-input').disabled = false;
-        document.querySelector('#send-button').disabled = false;
-    };
-
-    channel.onmessage = (event) => {
-        try {
-            const messageObj = JSON.parse(event.data);
-            if (messageObj.type === 'message') {
-                const chatMessages = document.querySelector('#chat-messages');
-                const messageEl = document.createElement('div');
-                messageEl.textContent = 'Remote: ' + messageObj.data;
-                chatMessages.appendChild(messageEl);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                const ackObj = {
-                    type: 'ack',
-                    id: messageObj.id
-                };
-                channel.send(JSON.stringify(ackObj));
-            } else if (messageObj.type === 'ack') {
-                const ackedMessageId = messageObj.id;
-                markMessageAsAcked(ackedMessageId);
-            }
-        } catch (error) {
-            console.error('Fehler beim Verarbeiten der Chatnachricht:', error);
-        }
-    };
-
-    channel.onclose = () => {
-        document.querySelector('#chat-input').disabled = true;
-        document.querySelector('#send-button').disabled = true;
-    };
-
-    channel.onerror = (error) => {
-       // console.error('dataChannelChat Fehler:', error);
-    };
-}
 
 export function addNewIceCandidate(iceCandidate) {
     peerConnection.addIceCandidate(iceCandidate);
 }
 
-export function hangup() {
-    if (dataChannelSystem && dataChannelSystem.readyState === 'open') {
-        dataChannelSystem.send('__hangup__');
-    }
-    closeWebRTC();
-}
+
+
+
+
 
 export async function closeWebRTC() {
-
-
-    location.reload(true);
-}
-
-
-export async function closeWebRTC2() {
-    if (dataChannelChat) {
-        dataChannelChat.close();
-        dataChannelChat = null;
-    }
-    if (dataChannelSystem) {
-        dataChannelSystem.close();
-        dataChannelSystem = null;
-    }
-
-    if (peerConnection) {
-        try {
-            peerConnection.setLocalDescription(null);
-            peerConnection.close();
-        } catch (error) {
-            console.error('Fehler beim Schließen der Peerverbindung:', error);
+    return new Promise((resolve, reject) => {
+      try {
+        if (dataChannelChat) {
+          dataChannelChat.close();
+        }
+        if (dataChannelSystem) {
+          dataChannelSystem.close();
+        }
+        if (dataChannelLucis) {
+          dataChannelLucis.close();
         }
 
+        if (peerConnection) {
+          try {
+            peerConnection.setLocalDescription(null);
+            peerConnection.close();
+          } catch (error) {
+            console.error('Fehler beim Schließen der Peerverbindung:', error);
+          }
 
-        peerConnection = null;
-    }
+          peerConnection = null;
+        }
 
-    if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-    }
-    if (remoteStream) {
-        remoteStream.getTracks().forEach(track => track.stop());
-        remoteStream = null;
-    }
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          localStream = null;
+        }
+        if (remoteStream) {
+          remoteStream.getTracks().forEach(track => track.stop());
+          remoteStream = null;
+        }
 
-    document.querySelector('#chat-input').disabled = true;
-    document.querySelector('#send-button').disabled = true;
+        document.querySelector('#chat-input').disabled = true;
+        document.querySelector('#send-button').disabled = true;
 
-    localVideoEl.srcObject = null;
-    remoteVideoEl.srcObject = null;
+        localVideoEl.srcObject = null;
+        remoteVideoEl.srcObject = null;
 
-    document.querySelector('#chat-messages').innerHTML = '';
+        document.querySelector('#chat-messages').innerHTML = '';
 
-    didIOffer = false;
+        didIOffer = false;
 
-    location.reload(true);
-}
+        //location.reload(true);
+
+        // Anstatt die Variablen direkt zu null zu setzen,
+        // könnten Sie eine Funktion in create.js aufrufen, die dies tut
+        resetDataChannels();
+
+        resolve();
+      } catch (error) {
+        console.error('Fehler beim Schließen der WebRTC-Verbindung:', error);
+        reject(error);
+      }
+    });
+  }
+
+  // In create.js fügen Sie diese Funktion hinzu:
+  export function resetDataChannels() {
+    dataChannelChat = null;
+    dataChannelSystem = null;
+    dataChannelLucis = null;
+  }

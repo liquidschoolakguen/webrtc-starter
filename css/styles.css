@@ -153,3 +153,38 @@ span {
     background-color: hsl(125, 100%, 88%);
 
 }
+
+
+
+
+
+
+
+
+
+#colored-text {
+    border: 1px solid #ccc;
+    padding: 5px;
+    min-height: 30px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.cursor {
+    display: inline-block;
+    width: 1px;
+    background-color: black;
+    animation: blink 0.7s steps(1) infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+#chat-input3 {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+}

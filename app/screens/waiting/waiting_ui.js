@@ -1,4 +1,4 @@
-import { cancelCall , answerOffer} from '../../lib/webrtc.js';
+import { cancelCall , answerOffer} from '../../lib/webrtc/create.js';
 import { debug } from '../../app.js';
 
 

@@ -13,7 +13,7 @@ let connectedSockets = [];
 let offers = [];
 
 let debug_first_user = true
-let debug = true;
+let debug = false;
 
 try {
     // Schlüssel und Zertifikat für HTTPS
@@ -49,6 +49,14 @@ try {
     io.on('connection', (socket) => {
         const userName = socket.handshake.auth.userName;
         const password = socket.handshake.auth.password;
+        console.log(socket.handshake.auth.debug);
+        debug = socket.handshake.auth.debug;
+
+        if (debug) {
+            console.log(" - - - debug mode - - - ");
+        } else {
+            console.log(" - - - normal mode - - - ");
+        }
 
         if (password !== "x") {
             socket.disconnect(true);
@@ -64,6 +72,9 @@ try {
         if (offers.length) {
             socket.emit('availableOffers', offers);
         }
+
+
+
 
         socket.on('newOffer', newOfferObj => {
 
@@ -85,7 +96,7 @@ try {
 
 
             if (debug) {
-                console.log("debug mode");
+                //console.log("debug mode");
 
                 if (debug_first_user) {
 

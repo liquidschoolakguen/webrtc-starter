@@ -1,7 +1,7 @@
 // ui_lucis.js
 
 import { hideAnswerButton } from  '../waiting/waiting_ui.js';
-import { hangup } from '../../lib/webrtc.js';
+import { hangup } from '../../lib/webrtc/data_cannels/system.js';
 
 
 export function initWebRTCScreen() {

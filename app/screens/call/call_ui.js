@@ -1,6 +1,6 @@
 
 
-import { call } from '../../lib/webrtc.js';
+import { call } from '../../lib/webrtc/create.js';
 
 
 

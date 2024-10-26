@@ -1,11 +1,13 @@
 // socket.js
 
 
-import { userName, password } from '../app.js';
-import { addAnswer, addNewIceCandidate, closeWebRTC } from './webrtc.js';
+import { _app } from '../app.js';
+import { addAnswer, addNewIceCandidate, closeWebRTC } from './webrtc/create.js';
 import { showAnswerButton, hideWaitingScreen } from '../screens/waiting/waiting_ui.js';
 import { showLandingScreen, hideLandingScreen } from '../screens/landing/landing_ui.js';
 import { showCallScreen, hideCallScreen } from '../screens/call/call_ui.js';
+
+
 
 import { debug } from '../app.js';
 
@@ -17,7 +19,7 @@ export async function initSocket() {
 
         socket = io({
             auth: {
-                userName, password
+                userName: _app.meUser.userName, password: "x", debug
             },
             secure: true,
             transports: ['websocket', 'polling']
@@ -31,7 +33,7 @@ export async function initSocket() {
         });
 
         socket.on('newOfferAwaiting', offers => {
-            console.log("newOfferAwaiting", offers);
+            //console.log("newOfferAwaiting", offers);
             if (offers.length > 0) {
                 //return {event: "newOfferAwaiting", offers: offers};
                 showAnswerButton(offers);
