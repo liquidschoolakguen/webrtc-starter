@@ -166,8 +166,8 @@ export class Data {
       let start = manipulation.cursorStart;
       console.log('');
       console.log('');
-      console.log('start', start);
-      console.log('lastConstructionValue', lastConstructionValue);
+      //console.log('start', start);
+      //console.log('lastConstructionValue', lastConstructionValue);
 
       const addLength = manipulation.to_add.length;
       const delLength = manipulation.to_delete.length;
@@ -183,7 +183,7 @@ export class Data {
         manipulation.to_add +
         endPart;
 
-        console.log('deletedPart', deletedPart,  deletedPart2);
+        //console.log('deletedPart', deletedPart,  deletedPart2);
 
 
 
@@ -191,7 +191,7 @@ export class Data {
 
 
       this.constructionValue = constructionValue;
-      console.log('constructionValue', constructionValue);
+      //console.log('constructionValue', constructionValue);
 
       // Aktualisiere lastConstructionValue für den nächsten Durchlauf
       this.lastConstructionValue = constructionValue;
@@ -277,9 +277,23 @@ export class LucisSession {
   }
 }
 
+
+
+export class Settings {
+  constructor() {
+    this.minPosition = 50;
+  }
+}
+
+
+
+
+
+
 export class App {
   constructor(userName) {
     this.meUser = new User(userName);
+    this.settings = new Settings();
     this.lucisSession = null;
     this.lucisSessions = [];
   }

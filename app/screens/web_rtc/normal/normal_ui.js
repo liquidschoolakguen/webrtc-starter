@@ -30,6 +30,8 @@ function sendMessage() {
     dataChannelChat.send(JSON.stringify(messageObj));
 
     const chatMessages = document.querySelector('#chat-messages');
+    //scrollbar von chatMessages ausblenden
+    //chatMessages.style.overflowY = 'hidden';
     const messageEl = document.createElement('div');
     messageEl.id = messageId;
     messageEl.textContent = 'You: ' + messageText;

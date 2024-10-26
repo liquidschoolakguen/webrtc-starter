@@ -1,40 +1,32 @@
-
-
-
-
 #videos {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2em;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
 }
 
 .video-player {
-    background-color: black;
-    width: 100%;
+  background-color: black;
+  width: 100%;
 }
 
 #video-wrapper {
-    position: relative;
+  position: relative;
 }
 
 #waiting {
-    display: none;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    width: 240px;
-    height: 40px;
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  width: 240px;
+  height: 40px;
 }
 
 #answer {
-
 }
-
-
-
 
 #connect,
 #callWithOptions,
@@ -43,32 +35,25 @@
 #main_screen,
 #videos,
 #chat {
-    display: none;
+  display: none;
 }
-
 
 #chat-input {
-
-    border:1px solid #ccc;
-
-
+  border: 1px solid #ccc;
 }
 #chat-input2 {
-
-    border:1px solid #ccc;
-    margin-top: 10px;
-
+  border: 1px solid #ccc;
+  margin-top: 10px;
 }
 
-
-
 /* Container */
-#chat-window, #record-chat-window{
-    display: block; /* Stellt sicher, dass das Eltern-Element als Block angezeigt wird */
-    padding: 0;
-    margin: 0;
+#chat-window,
+#record-chat-window {
+  display: block; /* Stellt sicher, dass das Eltern-Element als Block angezeigt wird */
+  padding: 0;
+  margin: 0;
 
-    text-align: right;
+  text-align: right;
 }
 
 /* Kindelemente */
@@ -76,115 +61,236 @@
 #record-display,
 #display-old,
 #record-display-old {
-    display: inline; /* Oder inline-block, je nach Bedarf */
-    white-space: pre-wrap;
-    /* Entfernen von zusätzlichen Abständen */
-    margin: 0;
-    padding: 0;
-    border: none; /* Optional: Entfernen, wenn nicht benötigt */
+  display: inline; /* Oder inline-block, je nach Bedarf */
+  white-space: pre-wrap;
+  /* Entfernen von zusätzlichen Abständen */
+  margin: 0;
+  padding: 0;
+  border: none; /* Optional: Entfernen, wenn nicht benötigt */
 
-    word-break: break-word;
-    overflow-wrap: break-word;
-
-
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Optional: Hervorhebung bestimmter Elemente */
 #display-old,
 #record-display-old {
-    background-color: #ff9999; /* Leicht rötlicher Hintergrund */
+  background-color: #ff9999; /* Leicht rötlicher Hintergrund */
 }
 
 #display,
 #record-display {
-    background-color: #6ee56e; /* Leicht grünlicher Hintergrund */
+  background-color: #6ee56e; /* Leicht grünlicher Hintergrund */
 }
 
-
-
-
-
-
 span {
-    margin-right: 0em; /* Horizontaler Abstand */
-  }
-
-
-
-
-
+  margin-right: 0em; /* Horizontaler Abstand */
+}
 
 @keyframes blink {
-    0% { opacity: 0; }
-    50% { opacity: 1; }
-    100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes typewriter-effect {
-    0% {
-        transform: scale(1.8);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+  0% {
+    transform: scale(1.8);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .typewriter-char {
-    display: inline-block;
-    animation: typewriter-effect 0.1s ease-out;
+  display: inline-block;
+  animation: typewriter-effect 0.1s ease-out;
 }
 
 .cursor {
-    display: inline-block;
-    width: 1px;
-    height: 1.2em;
-    background-color: #000;
-    animation: blink 0.7s infinite;
-
+  display: inline-block;
+  width: 1px;
+  height: 1.2em;
+  background-color: #000;
+  animation: blink 0.7s infinite;
 }
 
 .selected {
-    background-color: #b3d4fc;
+  background-color: #b3d4fc;
 }
 
 .old-sentence {
-    background-color: hsl(125, 100%, 88%);
-
+  background-color: hsl(125, 100%, 88%);
 }
 
-
-
-
-
-
-
-
-
 #colored-text {
-    border: 1px solid #ccc;
-    padding: 5px;
-    min-height: 30px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    position: relative;
+  border: 1px solid #ccc;
+  padding: 5px;
+  min-height: 30px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  position: relative;
 }
 
 .cursor {
-    display: inline-block;
-    width: 1px;
-    background-color: black;
-    animation: blink 0.7s steps(1) infinite;
+  display: inline-block;
+  width: 1px;
+  background-color: black;
+  animation: blink 0.7s steps(1) infinite;
 }
 
 @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 
 #chat-input3 {
-    position: absolute;
-    left: -9999px;
-    opacity: 0;
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+}
+
+#chat-messages {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Für Firefox */
+  -ms-overflow-style: none; /* Für Internet Explorer und Edge */
+}
+
+#chat-messages::-webkit-scrollbar {
+  display: none; /* Für Chrome, Safari und Opera */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.input-groupX {
+  position: relative;
+  /*margin-bottom: 20px; /* Abstand zwischen den Gruppen */
+  height: 230px; /* Höhe der überlagerten Elemente */
+}
+
+/* Gemeinsame Styles für beide Eingabegruppen */
+#chat-inputX,
+#mirror,
+#chat-inputX_rechts,
+#mirror_rechts {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  color: white;
+  padding: 10px;
+  margin: 0;
+  /* border: 1px solid #ccc;*/
+  border: none;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  border-radius: 0;
+
+  display: block; /* Stellt sicher, dass das Eltern-Element als Block angezeigt wird */
+
+}
+
+
+#mirror, #mirror_rechts {
+
+background-color: black;
+}
+
+
+
+#chat-inputX::-webkit-scrollbar,
+#chat-inputX_rechts::-webkit-scrollbar {
+  display: none; /* Für Chrome, Safari und Opera */
+}
+
+#chat-inputX,
+#chat-inputX_rechts {
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  resize: none;
+}
+
+#chat-inputX::selection,
+#chat-inputX_rechts::selection {
+  background: transparent;
+}
+
+/* Gemeinsame Styles für Cursor und Auswahl */
+.cursor {
+  display: inline-block;
+  width: 1px;
+  background-color: rgb(255, 255, 255);
+  animation: blink 1s step-end infinite;
+  vertical-align: bottom;
+}
+
+.selection {
+  background-color: rgba(0, 120, 215, 0.4);
+}
+
+/* Rechtsbündige Ausrichtung für die untere Eingabegruppe */
+#chat-inputX_rechts,
+#mirror_rechts {
+  text-align: right;
+}
+
+.highlight {
+  background-color: lightgreen;
+}
+
+
+#chat-inputX:focus,
+#chat-inputX_rechts:focus {
+    outline: none;
+  border: none;
+  box-shadow: none;
 }

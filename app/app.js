@@ -7,6 +7,8 @@ import { initWebRTCScreen, hideWebRTCScreen } from './screens/web_rtc/web_rtc_ui
 import { initNormalScreen } from './screens/web_rtc/normal/normal_ui.js';
 import { initializeLucisScreen } from './screens/web_rtc/lucis/lucis_ui.js';
 import { App } from './screens/web_rtc/lucis/lucis_model.js';
+import { createMirrorSync } from './screens/web_rtc/lucis/lucis_mirror_ui.js';
+
 
 
 //for debug
@@ -23,8 +25,9 @@ export function createApp(userName) {
 
 
 export const debug = true;
+export const minPosition = 30;
 
- function initializeApp() {
+function initializeApp() {
 
   const userName = "User-" + Math.floor(Math.random() * 100000);
 
@@ -38,6 +41,14 @@ export const debug = true;
   initWebRTCScreen();
   initializeLucisScreen();
 
+  // Synchronisation für die erste Eingabegruppe (links)
+  createMirrorSync('chat-inputX', 'mirror');
+
+
+  // Synchronisation für die zweite Eingabegruppe (rechts)
+  createMirrorSync('chat-inputX_rechts', 'mirror_rechts');
+
+
   console.log('App initialized');
 
 
@@ -46,14 +57,14 @@ export const debug = true;
 }
 
 
-export function runApp(debug){
+export function runApp(debug) {
   //console.log('runApp');
   if (debug) {
     console.log('runApp: --- debugMode ---')
     initSocket();
     call(false, false, true);
 
-  }else{
+  } else {
     console.log('runApp: --- normalMode ---');
     hideWebRTCScreen();
     showLandingScreen();

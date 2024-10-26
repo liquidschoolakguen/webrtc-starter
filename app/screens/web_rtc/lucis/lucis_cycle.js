@@ -1,11 +1,16 @@
 
 import { _s } from './lucis_session.js';
+import { _app } from '../../../app.js';
 
 
 
 
 
 export function checkChanges() {
+
+  checkAndSetCursor(document.querySelector('#chat-input2').value, document.querySelector('#chat-input2').selectionStart, document.querySelector('#chat-input2').selectionEnd);
+
+
   const inputTextValue = document.querySelector('#chat-input2').value;
   const inputCursorStart = document.querySelector('#chat-input2').selectionStart;
   const inputCursorEnd = document.querySelector('#chat-input2').selectionEnd;
@@ -23,7 +28,7 @@ export function checkChanges() {
     _s.cycle.data.createNewManipulation();
 
     const manipulation = _s.cycle.data.manipulation;
-    console.log(manipulation);
+    //console.log(manipulation);
 
     _s.cycle.data.createConstruction();
 
@@ -31,29 +36,70 @@ export function checkChanges() {
     //displayManipulation(manipulation);
 
     _s.cycle.data.lastInputValue = inputTextValue;
-   // console.log('CC inputTextValue: ' + inputTextValue);
-   // console.log('CC lastInputValue: ' + _s.cycle.data.lastInputValue);
+    // console.log('CC inputTextValue: ' + inputTextValue);
+    // console.log('CC lastInputValue: ' + _s.cycle.data.lastInputValue);
 
 
   }
 }
 
 
+  // Diese Funktion dient dazu, dass der User nicht zu weit nach links scrollen kann
+  //und die Cursorposition nicht zu weit nach links gesetzt wird
+function checkAndSetCursor(inputValue, lastInputCursorStart, lastInputCursorEnd) {
+  const minPosition = _app.settings.minPosition;
+
+  const splitIndex = findSplitIndex(minPosition);
+  const inputElement = document.querySelector('#chat-input2');
 
 
 
-function displayManipulation(manipulation) {
+  if (lastInputCursorStart < splitIndex ) {
+    inputElement.selectionStart = splitIndex;
 
 
+
+  }
+  if (lastInputCursorEnd <  splitIndex) {
+
+    inputElement.selectionEnd = splitIndex;
+
+
+  }
+
+  inputElement.focus();
 
 }
 
 
 
+//diese Funktion sorgt dafür, dass die neu gesetzte Cursorpoition nicht mitten im Wort ist
+function findSplitIndex(minPosition) {
+
+  const maxInputValueLength = minPosition;
+  let firstSpaceIndex = -1;
+
+  const element = document.querySelector('#chat-input2');
+
+  const inputValue = document.querySelector('#chat-input2').value
+
+  if (inputValue.length > maxInputValueLength) {
+    const ersterTeil = inputValue.substring(0, inputValue.length - maxInputValueLength);
+    console.log(ersterTeil, ersterTeil.length);
+    const cuttedInputValue = inputValue.substring(inputValue.length - maxInputValueLength, inputValue.length);
+    console.log(cuttedInputValue, cuttedInputValue.length);
+    firstSpaceIndex = cuttedInputValue.indexOf(' ') === -1 ? 0 : cuttedInputValue.indexOf(' ');
+    console.log(firstSpaceIndex);
+    //scrollZurCursorPosition(element, ersterTeil.length + firstSpaceIndex + 1)
+    return ersterTeil.length + firstSpaceIndex + 1 ;
+
+  }
+
+  return minPosition;
 
 
 
-
+}
 
 
 
@@ -83,11 +129,11 @@ function checkChangesXX() {
 
   let coloredValue = '';
   for (let i = 0; i < value.length; i++) {
-      if (i < 30) {
-          coloredValue += `<span style="color: green;">${value[i]}</span>`;
-      } else {
-          coloredValue += `<span style="color: red;">${value[i]}</span>`;
-      }
+    if (i < 30) {
+      coloredValue += `<span style="color: green;">${value[i]}</span>`;
+    } else {
+      coloredValue += `<span style="color: red;">${value[i]}</span>`;
+    }
   }
 
   coloredText.innerHTML = coloredValue;
@@ -107,7 +153,7 @@ export function checkChanges3() {
 
   if (inputTextValue !== lastInputTextValue3 || inputCursorStart !== lastInputCursorStart3 || inputCursorEnd !== lastInputCursorEnd3) {
 
-    console.log(inputTextValue, inputCursorStart, inputCursorEnd, "last: ", lastInputTextValue3 );
+    console.log(inputTextValue, inputCursorStart, inputCursorEnd, "last: ", lastInputTextValue3);
     changeColor();
 
     lastInputTextValue3 = inputTextValue;
@@ -140,18 +186,18 @@ export function changeColor() {
 
   let coloredValue = '';
   for (let i = 0; i < value.length; i++) {
-      if (i < 30) {
-          coloredValue += `<span style="color: green;">${value[i]}</span>`;
-      } else {
-          coloredValue += `<span style="color: red;">${value[i]}</span>`;
-      }
-      if (i === cursorPosition - 1) {
-          coloredValue += '<span class="cursor"></span>';
-      }
+    if (i < 30) {
+      coloredValue += `<span style="color: green;">${value[i]}</span>`;
+    } else {
+      coloredValue += `<span style="color: red;">${value[i]}</span>`;
+    }
+    if (i === cursorPosition - 1) {
+      coloredValue += '<span class="cursor"></span>';
+    }
   }
 
   if (cursorPosition === value.length) {
-      coloredValue += '<span class="cursor"></span>';
+    coloredValue += '<span class="cursor"></span>';
   }
 
   coloredText.innerHTML = coloredValue;
