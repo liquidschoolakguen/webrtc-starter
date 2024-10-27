@@ -39,9 +39,8 @@ export function initializeLucisScreen() {
 }
 
 
-function showLucisScreen() {
 
-}
+
 
 
 const sentMessages = {};

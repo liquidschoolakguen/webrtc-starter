@@ -1,18 +1,8 @@
-export function createMirrorSync(textareaId, mirrorId) {
-  const textarea = document.getElementById(textareaId);
-  const mirror = document.getElementById(mirrorId);
+export function createSyncAreaRemote() {
+  const textarea = document.getElementById('chat-inputX_rechts');
+  const mirror = document.getElementById('mirror_rechts');
 
 
-  function focusTextarea() {  //setze fokus auf das textarea
-
-
-  }
-
-  if (textarea === document.getElementById('chat-inputX')) {
-    setTimeout(() => {
-      textarea.focus();
-    }, 100);
-  }
 
   function escapeHTML(char) {
       const charCode = char.charCodeAt(0);
@@ -84,11 +74,11 @@ export function createMirrorSync(textareaId, mirrorId) {
       mirror.scrollLeft = textarea.scrollLeft;
   }
 
-  textarea.addEventListener('input', updateMirror);
+  //textarea.addEventListener('input', updateMirror);
   textarea.addEventListener('scroll', syncScroll);
-  textarea.addEventListener('click', updateMirror);
-  textarea.addEventListener('keyup', updateMirror);
-  textarea.addEventListener('select', updateMirror);
+  //textarea.addEventListener('click', updateMirror);
+  //textarea.addEventListener('keyup', updateMirror);
+  //textarea.addEventListener('select', updateMirror);
 
 
 

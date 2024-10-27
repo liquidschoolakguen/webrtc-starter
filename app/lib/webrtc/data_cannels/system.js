@@ -5,6 +5,8 @@ import { createSession, startRecording } from '../../../screens/web_rtc/lucis/lu
 import { runApp, debug } from '../../../app.js';
 import { _app } from '../../../app.js';
 import { dataChannelSystem, didIOffer, closeWebRTC } from '../create.js';
+import { checkAreaMeChanges } from '../../../screens/web_rtc/lucis/lucis_area_me_session.js';
+
 
 
 
@@ -22,6 +24,8 @@ export async function setupDataChannelSystem(channel) {
 
     createSession();
     startRecording();
+    checkAreaMeChanges();
+
 
      // console.log('dataChannelSystem ist offen');
   };

@@ -7,7 +7,8 @@ import { initWebRTCScreen, hideWebRTCScreen } from './screens/web_rtc/web_rtc_ui
 import { initNormalScreen } from './screens/web_rtc/normal/normal_ui.js';
 import { initializeLucisScreen } from './screens/web_rtc/lucis/lucis_ui.js';
 import { App } from './screens/web_rtc/lucis/lucis_model.js';
-import { createMirrorSync } from './screens/web_rtc/lucis/lucis_mirror_ui.js';
+import { createSyncAreaMe } from './screens/web_rtc/lucis/lucis_area_me_ui.js';
+import { createSyncAreaRemote } from './screens/web_rtc/lucis/lucis_area_remote.js';
 
 
 
@@ -41,18 +42,23 @@ function initializeApp() {
   initWebRTCScreen();
   initializeLucisScreen();
 
-  // Synchronisation für die erste Eingabegruppe (links)
-  createMirrorSync('chat-inputX', 'mirror');
 
-
-  // Synchronisation für die zweite Eingabegruppe (rechts)
-  createMirrorSync('chat-inputX_rechts', 'mirror_rechts');
 
 
   console.log('App initialized');
 
 
   runApp(debug);
+
+  createSyncAreaMe();
+
+
+    // Synchronisation für die zweite Eingabegruppe (rechts)
+    createSyncAreaRemote();
+
+
+
+
 
 }
 

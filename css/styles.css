@@ -113,6 +113,7 @@ span {
 .typewriter-char {
   display: inline-block;
   animation: typewriter-effect 0.1s ease-out;
+  overflow: hidden;
 }
 
 .cursor {
@@ -238,6 +239,22 @@ span {
 
 }
 
+#pause-screen {
+
+background-color: rgba(255, 255, 255, 0.313);
+position: absolute;
+top: 0;
+left: 0;
+
+border: none;
+box-sizing: border-box;
+width: 100%;
+height: 200%;
+
+
+display: none; /* Stellt sicher, dass das Eltern-Element als Block angezeigt wird */
+}
+
 
 #mirror, #mirror_rechts {
 
@@ -270,7 +287,8 @@ background-color: black;
   width: 1px;
   background-color: rgb(255, 255, 255);
   animation: blink 1s step-end infinite;
-  vertical-align: bottom;
+  position: absolute;
+  margin-left: -1px;
 }
 
 .selection {
@@ -293,4 +311,41 @@ background-color: black;
     outline: none;
   border: none;
   box-shadow: none;
+}
+
+
+
+
+
+
+
+@keyframes shrink {
+    0% {
+        font-size: 1em;
+        opacity: 1;
+    }
+    80% {
+        font-size: 1em;
+        opacity: 1;
+    }
+    100% {
+        font-size: 0em;
+        opacity: 0;
+    }
+}
+
+/* Klasse für schrumpfende Zeichen */
+.shrinking_left {
+    animation:
+        shrink 15s forwards,
+        typewriter-effect 0.1s ease-out;
+    display: inline-block;
+    overflow: hidden;
+    transform-origin: bottom right;
+
+}
+
+/* Stil für individuelle Zeichen */
+.char {
+    display: inline-block;
 }

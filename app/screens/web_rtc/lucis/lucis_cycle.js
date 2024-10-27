@@ -8,7 +8,7 @@ import { _app } from '../../../app.js';
 
 export function checkChanges() {
 
-  checkAndSetCursor(document.querySelector('#chat-input2').value, document.querySelector('#chat-input2').selectionStart, document.querySelector('#chat-input2').selectionEnd);
+  //checkAndSetCursor(document.querySelector('#chat-input2').value, document.querySelector('#chat-input2').selectionStart, document.querySelector('#chat-input2').selectionEnd);
 
 
   const inputTextValue = document.querySelector('#chat-input2').value;
@@ -33,16 +33,36 @@ export function checkChanges() {
     _s.cycle.data.createConstruction();
 
 
+
     //displayManipulation(manipulation);
 
     _s.cycle.data.lastInputValue = inputTextValue;
-    // console.log('CC inputTextValue: ' + inputTextValue);
-    // console.log('CC lastInputValue: ' + _s.cycle.data.lastInputValue);
 
+
+
+    //test()
 
   }
 }
 
+
+function test(){
+
+    if(_s.cycle.data.inputValue === _s.cycle.data.constructionValue &&
+    _s.cycle.data.lastInputValue === _s.cycle.data.lastConstructionValue &&
+    _s.cycle.data.inputCS === _s.cycle.data.manipulation.cursorStart &&
+    _s.cycle.data.inputCE === _s.cycle.data.manipulation.cursorEnd
+  ) {
+    console.log("ok"  );
+  }else{
+
+    console.log("not ok");
+    console.log(_s.cycle.data.inputValue, _s.cycle.data.constructionValue, );
+    console.log( _s.cycle.data.lastInputValue, _s.cycle.data.lastConstructionValue);
+  }
+
+
+}
 
   // Diese Funktion dient dazu, dass der User nicht zu weit nach links scrollen kann
   //und die Cursorposition nicht zu weit nach links gesetzt wird

@@ -128,6 +128,7 @@ export class Data {
       manipulation.to_add = inputValue.slice(start, endNew);
 
 
+//console.log('start', start, 'endOld', endOld, 'endNew', endNew);
 
     } else {
 
@@ -136,6 +137,7 @@ export class Data {
       //manipulation.to_delete = lastInputValue.substring(inputCS, inputCE);
 
     }
+    //console.log('this.inputCS', this.inputCS, 'this.inputCE', this.inputCE);
     //kontrolliere ob die manipulation unterschiedlich ist
     // if (manipulation.to_add !== copy.to_add || manipulation.to_delete !== copy.to_delete || manipulation.cursorStart !== copy.cursorStart || manipulation.cursorEnd !== copy.cursorEnd) {
     this.manipulation = manipulation;
@@ -164,8 +166,8 @@ export class Data {
     if (manipulation.cursorStart === manipulation.cursorEnd) {
       // Wenn kein Text markiert war
       let start = manipulation.cursorStart;
-      console.log('');
-      console.log('');
+      //console.log('');
+      //console.log('');
       //console.log('start', start);
       //console.log('lastConstructionValue', lastConstructionValue);
 

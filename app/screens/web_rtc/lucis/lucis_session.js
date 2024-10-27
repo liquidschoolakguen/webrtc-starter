@@ -22,6 +22,16 @@ export function createSession() {
 export function startRecording() {
   console.log('startRecording');
   document.querySelector('#chat-input2').disabled = false;
+  document.querySelector('#pause-screen').style.display = 'none';
+
+  const textarea = document.getElementById('chat-inputX');
+  textarea.focus();
+  // starte das blinken des cursors
+  const cursors = document.querySelectorAll('.cursor');
+  cursors.forEach(cursor => {
+    cursor.style.animation = 'blink 1s step-end infinite';
+  });
+
   const display = document.querySelector('#display');
   const displayOld = document.querySelector('#display-old');
 
@@ -72,6 +82,18 @@ export function stopRecording() {
   const display = document.querySelector('#display');
   const displayOld = document.querySelector('#display-old');
   const inputValue = document.querySelector('#chat-input2').value;
+  document.querySelector('#pause-screen').style.display = 'block';
+
+  //unfocus
+  const textarea = document.getElementById('chat-inputX');
+  textarea.blur();
+
+  // stoppe das blinken des cursors
+  const cursors = document.querySelectorAll('.cursor');
+  cursors.forEach(cursor => {
+    cursor.style.animation = 'none';
+  });
+
 
   document.querySelector('#reset-btn').disabled = false;
   document.querySelector('#play-btn').disabled = false;
